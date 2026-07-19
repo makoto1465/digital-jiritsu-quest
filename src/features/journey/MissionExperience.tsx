@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { GlossaryText } from "@/components/learning/GlossaryTerm";
 import { journeyAreas, journeyMissions } from "@/content/journey";
 import { PracticalLab } from "@/features/lab/PracticalLab";
+import { missionChallenges, resolveChallengeObjective } from "@/features/lab/mission-challenges";
 import { useProgress, type JourneyEnvironment, type SupportLevel } from "@/features/progress/ProgressProvider";
 import type { MissionDefinition } from "@/lib/journey-types";
 
@@ -26,6 +27,8 @@ export function MissionExperience({ environment, mission }: { environment: Journ
   const missionIndex = journeyMissions.findIndex((item) => item.id === mission.id);
   const nextMission = journeyMissions[missionIndex + 1];
   const operation = mission.environmentOperations[environment];
+  const challenge = missionChallenges[mission.id];
+  const directInstruction = challenge ? resolveChallengeObjective(challenge, environment) : mission.mission;
 
   useEffect(() => { headingRef.current?.focus(); }, [phase]);
 
@@ -62,7 +65,7 @@ export function MissionExperience({ environment, mission }: { environment: Journ
           <header>
             <p>{area.order}. {area.title}　・　{mission.estimatedMinutes}分ほど</p>
             <h1 ref={headingRef} tabIndex={-1}>{mission.title}</h1>
-            <div className="mission-task"><span>やること</span><strong><GlossaryText text={mission.mission} /></strong></div>
+            <div className="mission-task"><span>やること</span><strong><GlossaryText text={directInstruction} /></strong></div>
           </header>
 
           <section className="mission-steps" aria-labelledby="steps-title">

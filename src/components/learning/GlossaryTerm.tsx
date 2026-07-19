@@ -6,6 +6,7 @@ import { useProgress } from "@/features/progress/ProgressProvider";
 const glossary = {
   doubleClick: { label: "ダブルクリック", definition: "マウスの左ボタンを、すばやく2回押す操作です。" },
   rightClick: { label: "右クリック", definition: "マウスの右ボタンを1回押し、その場所で使えるメニューを開く操作です。" },
+  leftClick: { label: "左クリック", definition: "マウスの左ボタンを1回押して、すぐ離す操作です。" },
   click: { label: "クリック", definition: "マウスの左ボタンを1回押して、すぐ離す操作です。" },
   pointer: { label: "ポインター", definition: "マウスを動かすと画面上で動く、矢印などの印です。" },
   tap: { label: "タップ", definition: "スマートフォンの画面を指で1回軽く触る操作です。" },
@@ -53,7 +54,7 @@ export function GlossaryTerm({ term }: { term: GlossaryTermKey }) {
   }
 
   return (
-    <span className="glossary-term">
+    <span className="glossary-term" onMouseLeave={() => setOpen(false)} onPointerLeave={() => setOpen(false)}>
       <button
         type="button"
         className="glossary-term__button"

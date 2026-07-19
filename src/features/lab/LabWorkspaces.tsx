@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
 
 import type { JourneyEnvironment } from "@/features/progress/ProgressProvider";
 
@@ -57,16 +57,55 @@ function ContextTarget({ environment, emit }: Pick<WorkspaceProps, "environment"
   );
 }
 
+function CopyPastePractice({ environment, emit }: Pick<WorkspaceProps, "environment" | "emit">) {
+  const source = "夏祭りのご案内\n集合場所：中央公民館\n開始時刻：午前10時";
+  const copiedText = "集合場所：中央公民館";
+  const [selectedCorrectly, setSelectedCorrectly] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [note, setNote] = useState("");
+  const [menu, setMenu] = useState<"source" | "note" | null>(null);
+
+  function inspectSelection(target: HTMLTextAreaElement) {
+    setSelectedCorrectly(target.value.slice(target.selectionStart, target.selectionEnd) === copiedText);
+  }
+
+  return (
+    <div className={`copy-practice copy-practice--${environment}`}>
+      <section className="notepad-window" aria-label="見本文が開かれたメモ帳">
+        <header><span className="notepad-icon" aria-hidden="true">▤</span><strong>夏祭りのご案内.txt - メモ帳</strong><span className="window-controls" aria-hidden="true">—　□　×</span></header>
+        <nav aria-label="メモ帳のメニュー"><span>ファイル</span><span>編集</span><span>表示</span></nav>
+        <textarea
+          aria-label="コピー元の見本文"
+          onContextMenu={(event) => { event.preventDefault(); const selected = event.currentTarget.value.slice(event.currentTarget.selectionStart, event.currentTarget.selectionEnd) === copiedText; setSelectedCorrectly(selected); if (selected) setMenu("source"); }}
+          onKeyDown={(event) => { if (event.shiftKey && event.key === "F10" && selectedCorrectly) setMenu("source"); }}
+          onSelect={(event) => inspectSelection(event.currentTarget)}
+          readOnly
+          value={source}
+        />
+        {menu === "source" ? <div className="native-context-menu"><button type="button" onClick={() => { setCopied(true); setMenu(null); emit("text-copied", "『集合場所：中央公民館』をコピーしました。"); }}>コピー</button></div> : null}
+      </section>
+
+      <section className="notepad-window" aria-label="貼り付け先のメモ帳">
+        <header><span className="notepad-icon" aria-hidden="true">▤</span><strong>自分のメモ.txt - メモ帳</strong><span className="window-controls" aria-hidden="true">—　□　×</span></header>
+        <nav aria-label="メモ帳のメニュー"><span>ファイル</span><span>編集</span><span>表示</span></nav>
+        <textarea
+          aria-label="貼り付け先のメモ欄"
+          onContextMenu={(event) => { event.preventDefault(); setMenu("note"); }}
+          onKeyDown={(event) => { if (event.shiftKey && event.key === "F10") setMenu("note"); }}
+          onChange={(event) => setNote(event.target.value)}
+          placeholder="ここを右クリックします"
+          value={note}
+        />
+        {menu === "note" ? <div className="native-context-menu native-context-menu--target"><button disabled={!copied} type="button" onClick={() => { setNote(copiedText); setMenu(null); emit("text-pasted", "コピーした文章をメモへ貼り付けました。"); }}>貼り付け</button></div> : null}
+      </section>
+      <p className="copy-practice__status" aria-live="polite">{!selectedCorrectly ? "① 見本文の『集合場所：中央公民館』だけをドラッグして選択します" : !copied ? `② 選択した文字の上で${environmentCopy[environment].context}します` : note !== copiedText ? `③ 右のメモ欄を${environmentCopy[environment].context}します` : "コピーと貼り付けができました"}</p>
+    </div>
+  );
+}
+
 export function MovementWorkspace({ environment, emit, missionId }: WorkspaceProps) {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [trashed, setTrashed] = useState(false);
-  const pointerDraggingRef = useRef(false);
   const showAll = missionId === "free-play";
-  const trashMemo = () => {
-    setTrashed(true);
-    pointerDraggingRef.current = false;
-    emit("item-trashed", "町内会のお知らせ.txtファイルがゴミ箱へ移りました。");
-  };
   return (
     <div className="lab-workspace-grid lab-workspace-grid--movement">
       {missionId === "pointer" || showAll ? <section className="lab-panel" aria-labelledby="calendar-title">
@@ -108,35 +147,7 @@ export function MovementWorkspace({ environment, emit, missionId }: WorkspacePro
         </div>
       </section> : null}
 
-      {missionId === "recovery" || showAll ? <section className="lab-panel" aria-labelledby="recovery-title">
-        <div className="lab-panel__bar"><span /><h3 id="recovery-title">ファイルを元に戻す練習</h3></div>
-        <div className="recovery-tray">
-          {!trashed ? (
-            <button
-              className="draggable-note"
-              draggable
-              onDragStart={(event) => { event.dataTransfer.setData("text/plain", "practice-note"); pointerDraggingRef.current = true; }}
-              onPointerDown={() => { pointerDraggingRef.current = true; }}
-              onPointerUp={() => { pointerDraggingRef.current = false; }}
-              onContextMenu={(event) => { event.preventDefault(); trashMemo(); }}
-              onClick={(event) => { if (event.detail === 0) trashMemo(); }}
-              type="button"
-            >
-              📄 町内会のお知らせ.txt <small>ファイル・ゴミ箱へ動かしてください</small>
-            </button>
-          ) : <p className="empty-slot">町内会のお知らせ.txtファイルはゴミ箱にあります</p>}
-          <div
-            className="trash-target"
-            onDragOver={(event) => event.preventDefault()}
-            onPointerUp={() => { if (pointerDraggingRef.current) trashMemo(); }}
-            onDrop={(event: DragEvent<HTMLDivElement>) => {
-              event.preventDefault();
-              trashMemo();
-            }}
-          >🗑️ ゴミ箱</div>
-        </div>
-        {trashed ? <button className="lab-undo" type="button" onClick={() => { setTrashed(false); emit("action-undone", "町内会のお知らせ.txtファイルを元の場所へ戻しました。"); }}>↶ ファイルを元に戻す</button> : null}
-      </section> : null}
+      {missionId === "recovery" || showAll ? <CopyPastePractice environment={environment} emit={emit} /> : null}
     </div>
   );
 }
@@ -196,7 +207,7 @@ export function ScreensWorkspace({ environment, emit }: WorkspaceProps) {
   return (
     <div className={`device-stage device-stage--${environment}`} tabIndex={0} onKeyDown={handleShortcut}>
       <div className="device-stage__topbar">
-        <span>{environment === "windows" ? "11:24　Wi-Fi" : environment === "mac" ? "Finder　 ファイル　 編集" : "11:24　●●●"}</span>
+        <span>{environment === "windows" ? "デスクトップ" : environment === "mac" ? "Finder　 ファイル　 編集" : "11:24　●●●"}</span>
         <button type="button" aria-expanded={menuOpen} onClick={() => { setMenuOpen((value) => !value); emit("menu-opened", "画面のメニューを開きました。"); }}>⋯ <span className="sr-only">メニュー</span></button>
         {menuOpen ? <div className="lab-menu lab-menu--top" role="group" aria-label="画面のメニュー"><button type="button" onClick={() => { emit("display-opened", "表示の設定を開きました。"); setMenuOpen(false); }}>表示</button><button type="button">ヘルプ</button></div> : null}
       </div>
@@ -204,7 +215,7 @@ export function ScreensWorkspace({ environment, emit }: WorkspaceProps) {
       <div className="device-stage__screen" ref={screenRef} tabIndex={-1}>
         {activeApp === "home" ? (
           <div className="app-launcher">
-            <p>使うアプリを選んでください</p>
+            <p>{environment === "windows" ? "開くアプリを左クリックしてください" : environment === "mac" ? "開くアプリをクリックしてください" : "開くアプリをタップしてください"}</p>
             <div><button type="button" onClick={() => openApp("browser")}><span>🌐</span>ブラウザ</button><button type="button" onClick={() => openApp("notes")}><span>📝</span>メモ</button>{environment === "iphone" || environment === "android" ? <><button type="button" onClick={() => openApp("camera")}><span>📷</span>カメラ</button><button type="button" onClick={() => openApp("phone")}><span>☎</span>電話</button></> : null}</div>
           </div>
         ) : null}
@@ -240,15 +251,17 @@ export function ScreensWorkspace({ environment, emit }: WorkspaceProps) {
         <button type="button" aria-pressed={activeApp === "home"} onClick={() => setActiveApp("home")}>{environmentCopy[environment].home}</button>
         {openApps.map((app) => <button type="button" aria-pressed={activeApp === app} onClick={() => switchApp(app)} key={app}>{app === "browser" ? "🌐 ブラウザ" : app === "notes" ? "📝 メモ" : app === "camera" ? "📷 カメラ" : "☎ 電話"}</button>)}
       </nav>
-      <p className="device-stage__shortcut">切替の別経路：{environment === "windows" ? "Alt + Tab" : environment === "mac" ? "Command + Tab" : "画面下からスワイプして切替画面"}</p>
+      <p className="device-stage__shortcut">{environment === "windows" ? "画面下のアプリ名を左クリックすると、開いた画面を切り替えられます。" : environment === "mac" ? "画面下のアプリ名をクリックすると、開いた画面を切り替えられます。" : "画面下からスワイプすると、開いたアプリを切り替えられます。"}</p>
     </div>
   );
 }
 
-export function TextWorkspace({ environment, emit }: WorkspaceProps) {
+export function TextWorkspace({ emit }: WorkspaceProps) {
   const source = "集合場所：中央公民館　持ち物：青いタオル　開始：午前10時";
   const [typing, setTyping] = useState("");
   const [note, setNote] = useState("");
+  const [previousNote, setPreviousNote] = useState("");
+  const [redoNote, setRedoNote] = useState<string | null>(null);
   const editedRef = useRef(false);
 
   const inspectSelection = (target: HTMLTextAreaElement) => {
@@ -272,31 +285,27 @@ export function TextWorkspace({ environment, emit }: WorkspaceProps) {
         <input id="target-typing" value={typing} onChange={(event) => { setTyping(event.target.value); if (event.target.value.trim() === "夏祭り 10時") emit("target-typed", "必要な文字を正しく入力しました。"); }} placeholder="ここへ入力" />
       </section>
       <section className="lab-panel note-editor">
-        <div className="lab-panel__bar"><span /><h3>自分のメモ</h3><small>{environmentCopy[environment].shortcut}の操作も使えます</small></div>
+        <div className="lab-panel__bar"><span /><h3>自分のメモ</h3><small>画面上のボタンで操作します</small></div>
         <textarea
           aria-label="貼り付け先のメモ"
-          value={note}
-          onBeforeInput={(event) => {
-            const native = event.nativeEvent as InputEvent;
-            if (native.inputType === "historyUndo") emit("text-undone", "直前の文字編集を取り消しました。");
-          }}
           onChange={(event) => {
+            setPreviousNote(note);
             setNote(event.target.value);
+            setRedoNote(null);
             if (!editedRef.current && event.target.value.length > 0) {
               editedRef.current = true;
               emit("text-edited", "メモへ文字を追加しました。");
             }
           }}
-          onKeyDown={(event) => {
-            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z" && editedRef.current) emit("text-undone", "ショートカットで直前の編集を取り消しました。");
-          }}
           onPaste={(event) => {
             if (event.clipboardData.getData("text").includes("集合場所：中央公民館")) emit("text-pasted", "コピーした集合場所を貼り付けました。");
           }}
           placeholder="コピーした内容や、自分のメモをここへ"
+          value={note}
         />
-        <div className="shortcut-strip" aria-label="環境別の操作例">
-          {environment === "windows" ? "コピー Ctrl+C　貼り付け Ctrl+V　元に戻す Ctrl+Z" : environment === "mac" ? "コピー ⌘C　貼り付け ⌘V　元に戻す ⌘Z" : "選択範囲をタップして、コピー／ペーストを選びます"}
+        <div className="editor-action-bar" aria-label="メモの編集操作">
+          <button disabled={!note} type="button" onClick={() => { setRedoNote(note); setNote(previousNote); emit("text-undone", "画面上の『取り消し』で直前の編集を戻しました。"); }}>↶ 取り消し</button>
+          <button disabled={redoNote === null} type="button" onClick={() => { if (redoNote === null) return; setNote(redoNote); setRedoNote(null); }}>↷ やり直し</button>
         </div>
       </section>
     </div>
@@ -337,13 +346,16 @@ export function WebWorkspace({ emit }: WorkspaceProps) {
     setActive(tab);
     if (tab === "official") { emit("official-opened", "みどり市公式サイトを開きました。"); emit("independent-source", "公式の発信元を選びました。"); }
   };
+  const address = active === "official" ? "https://www.city.midori.example/library" : active === "blog" ? "https://midori-life.example/diary" : "https://www.google.co.jp/";
   return (
     <div className="web-workbench">
       <div className="browser-chrome">
         <div className="browser-tabs" role="tablist" aria-label="開いているタブ">
           <button role="tab" aria-selected={active === "results"} type="button" onClick={() => setActive("results")}>検索</button>
           {tabs.map((tab) => <button role="tab" aria-selected={active === tab} type="button" onClick={() => setActive(tab)} key={tab}>{tab === "official" ? "みどり市公式" : "まちブログ"}</button>)}
+          <button className="new-tab-button" type="button" aria-label="新しいタブ">＋</button>
         </div>
+        <div className="browser-toolbar" aria-label="ブラウザの操作バー"><button type="button" aria-label="戻る">←</button><button type="button" aria-label="再読み込み">↻</button><div className="browser-address"><span aria-hidden="true">🔒</span>{address}</div><button type="button" aria-label="ブラウザのメニュー">…</button></div>
         <form className="search-bar" onSubmit={(event) => { event.preventDefault(); runSearch(); }}>
           <label className="sr-only" htmlFor="lab-search">検索語</label>
           <input id="lab-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="例：みどり市 図書館" />
@@ -468,7 +480,7 @@ export function RecoveryWorkspace({ environment, emit }: WorkspaceProps) {
       <section className="recovery-card"><header><span>保存できませんでした</span><button type="button" onClick={() => { setErrorOpen(true); emit("error-inspected", "エラーの詳細を開きました。"); }}>詳細を見る</button></header>{errorOpen ? <div><p><strong>空き容量が不足しています。</strong><br />このファイルには20MB必要です。</p><button type="button" onClick={() => { setStorageFixed(true); emit("storage-fixed", "練習用の不要ファイルをゴミ箱へ移し、容量を空けました。"); }}>不要な練習ファイルを整理</button><button disabled={!storageFixed} type="button" onClick={() => emit("retry-succeeded", "原因を直したあと、保存に成功しました。")} >保存を再試行</button></div> : null}</section>
       <section className="recovery-card"><header><span>Wi-Fi：接続済み・通信なし</span><button type="button" onClick={() => { setInspectedNetwork(true); emit("network-inspected", "接続中のネットワークと機内モードを確認しました。"); }}>状態を見る</button></header>{inspectedNetwork ? <div className="network-list" role="radiogroup" aria-label="Wi-Fiネットワーク"><label><input type="radio" checked={network === "guest"} onChange={() => setNetwork("guest")} /> guest-free（通信なし）</label><label><input type="radio" checked={network === "town"} onChange={() => { setNetwork("town"); emit("correct-network", "『まちのWi-Fi』へつなぎ直しました。"); }} /> まちのWi-Fi（安全な練習用）</label><button disabled={network !== "town"} type="button" onClick={() => emit("connection-verified", "公式ページと天気ページの両方を表示できました。")} >二つのページで確認</button></div> : null}</section>
       <section className="recovery-card"><header><span>公式ヘルプを探す</span></header><form onSubmit={(event) => { event.preventDefault(); if (helpQuery.includes("文字") && (helpQuery.toLowerCase().includes(environment) || helpQuery.includes(environment === "windows" ? "Windows" : environment === "mac" ? "Mac" : environment === "iphone" ? "iPhone" : "Android"))) { setHelpOpen(true); emit("help-query", "環境名と症状を含めて検索しました。"); } }}><input aria-label="ヘルプ検索" value={helpQuery} onChange={(event) => setHelpQuery(event.target.value)} placeholder={`${environment === "iphone" ? "iPhone" : environment} 文字が大きい`} /><button type="submit">ヘルプ検索</button></form>{helpOpen ? <div className="help-result"><button type="button" onClick={() => { emit("trusted-help", "公式ヘルプの該当項目を開きました。"); setZoom("100"); emit("display-restored", "表示倍率を100%へ戻しました。"); }}>公式ヘルプ：表示倍率を元へ戻す</button><label>現在の表示倍率 <output>{zoom}%</output></label></div> : null}</section>
-      <section className="recovery-card"><header><span>コピーの右クリックが使えません</span></header><p>目的は、選んだ文字をコピーすることです。</p><button type="button" onClick={() => emit("primary-blocked", "いつもの補助メニューが使えないと確認しました。")} >右クリックを試す</button><div className="alternate-actions"><button type="button" onClick={() => emit("alternate-used", "上部の編集メニューからコピーしました。")} >編集メニュー → コピー</button><button type="button" onClick={() => emit("alternate-used", `${environmentCopy[environment].shortcut}のコピー操作を使いました。`)}>{environmentCopy[environment].shortcut}でコピー</button></div></section>
+      <section className="recovery-card"><header><span>コピーの右クリックが使えません</span></header><p>右クリック以外にも、画面上の編集メニューからコピーできます。</p><button type="button" onClick={() => emit("primary-blocked", "右クリックが使えないことを確認しました。")} >右クリックを試す</button><div className="alternate-actions"><button type="button" onClick={() => emit("alternate-used", "上部の編集メニューからコピーしました。")} >編集メニュー → コピー</button></div></section>
     </div>
   );
 }

@@ -42,23 +42,7 @@ export function JourneyMap({ environment }: { environment: JourneyEnvironment })
             <p>{environmentNames[environment]}・できた項目 {hydrated ? `${completed.size} / ${journeyMissions.length}` : "— / 32"}</p>
             <h1 id="journey-title">練習を選ぶ</h1>
           </div>
-          <Link className="change-environment" href="/start">使う機器を変える</Link>
         </header>
-
-        <div className="curriculum__quick-actions" aria-label="すぐに始める">
-          <Link className="quick-action quick-action--restart" href={`/mission/${environment}/pointer`}>
-            <span>最初</span><strong>最初から始める</strong><small>1-1「日付をクリックする」</small><b aria-hidden="true">→</b>
-          </Link>
-          {completed.size ? (
-            <Link className="quick-action quick-action--resume" href={`/mission/${environment}/${nextMission.id}`}>
-              <span>続き</span><strong>前回の続きから始める</strong><small>{nextMission.title}</small><b aria-hidden="true">→</b>
-            </Link>
-          ) : (
-            <div className="quick-action quick-action--disabled" aria-disabled="true">
-              <span>続き</span><strong>前回の続きはまだありません</strong><small>1-1を終えると使えます</small>
-            </div>
-          )}
-        </div>
 
         <div className="curriculum__progress" aria-label={`全体の${completionRate}%完了`}><span style={{ width: `${completionRate}%` }} /></div>
 

@@ -1,3 +1,5 @@
+import type { JourneyEnvironment } from "@/features/progress/ProgressProvider";
+
 export type WorkspaceId = "movement" | "screens" | "text" | "web" | "files" | "safety" | "recovery" | "independent";
 
 export interface MissionChallenge {
@@ -17,46 +19,81 @@ const challenge = (
 ): MissionChallenge => ({ workspace, objective, successNote, required, forbidden });
 
 export const missionChallenges: Record<string, MissionChallenge> = {
-  pointer: challenge("movement", "予定表の『7月19日』を一度選んでください。", "ねらった対象と、選んだ後の変化を確認できました。", [["target-selected"]]),
-  scroll: challenge("movement", "お知らせを下へ動かし、『持ち物』を見つけて選んでください。", "画面外にも内容が続く手掛かりを見つけました。", [["notice-scrolled"], ["detail-found"]]),
-  context: challenge("movement", "『参考資料』フォルダーのメニューを開き、『情報を見る』を押してください。", "フォルダーのメニューを開き、情報を確認できました。", [["context-opened"], ["info-inspected"]]),
-  recovery: challenge("movement", "『町内会のお知らせ.txt』ファイルをゴミ箱へ移し、元に戻してください。", "ファイルをゴミ箱から元の場所へ戻せました。", [["item-trashed"], ["action-undone"]]),
+  pointer: challenge("movement", "予定表の『7月19日』を{{activate}}してください。", "ねらった対象を操作し、画面の変化を確認できました。", [["target-selected"]]),
+  scroll: challenge("movement", "お知らせの中を{{scroll}}し、『持ち物　青いタオル』を{{activate}}してください。", "スクロールして見つけた項目を操作できました。", [["notice-scrolled"], ["detail-found"]]),
+  context: challenge("movement", "『参考資料』フォルダーを{{context}}し、表示された『情報を見る』を{{activate}}してください。", "フォルダーのメニューを開き、情報を確認できました。", [["context-opened"], ["info-inspected"]]),
+  recovery: challenge("movement", "見本文の『集合場所：中央公民館』を{{selectText}}、『コピー』を{{activate}}します。次にメモ欄を{{context}}し、『貼り付け』を{{activate}}してください。", "見本文を残したまま、同じ文章をメモへ貼り付けられました。", [["text-copied"], ["text-pasted"]]),
 
-  navigation: challenge("screens", "ブラウザで『施設案内』を開き、ひとつ前の画面へ戻ってください。", "現在地を失わず、履歴を使って戻れました。", [["page-opened"], ["went-back"]]),
-  "open-close": challenge("screens", "メモを開いて閉じ、もう一度開いてください。内容が残ることも確かめます。", "アプリを閉じることと、内容を消すことを区別できました。", [["notes-opened"], ["window-closed"], ["app-reopened"]]),
-  "app-switch": challenge("screens", "ブラウザとメモを開き、切替バーまたは環境のショートカットで二往復してください。", "二つの作業を閉じずに行き来できました。", [["two-apps-open"], ["app-switched"]]),
-  "menu-discovery": challenge("screens", "三点または歯車の手掛かりからメニューを開き、『表示』を選んでください。", "見た目の手掛かりから隠れた機能を探せました。", [["menu-opened"], ["display-opened"]]),
+  navigation: challenge("screens", "ブラウザの『中央公民館｜施設案内』を{{activate}}して開き、左上の『← 戻る』を{{activate}}してください。", "現在地を失わず、戻るボタンで前の画面へ戻れました。", [["page-opened"], ["went-back"]]),
+  "open-close": challenge("screens", "デスクトップの『メモ』を{{activate}}して開き、右上の『閉じる』を{{activate}}します。その後、『メモ』をもう一度{{activate}}してください。", "アプリを閉じることと、内容を消すことを区別できました。", [["notes-opened"], ["window-closed"], ["app-reopened"]]),
+  "app-switch": challenge("screens", "『ブラウザ』と『メモ』を{{activate}}して開き、画面下の切替ボタンを{{activate}}して2回切り替えてください。", "二つの作業を閉じずに行き来できました。", [["two-apps-open"], ["app-switched"]]),
+  "menu-discovery": challenge("screens", "画面右上の『…』を{{activate}}し、表示された『表示』を{{activate}}してください。", "画面上の印からメニューを開けました。", [["menu-opened"], ["display-opened"]]),
 
-  typing: challenge("text", "入力欄へ『夏祭り 10時』と入力してください。間違えた文字はその場で直せます。", "入力位置を確かめ、必要な文字を入力できました。", [["target-typed"]]),
-  "text-selection": challenge("text", "文章の中から『青いタオル』だけを、ドラッグまたは選択ハンドルで選んでください。", "必要な範囲だけを選べました。", [["text-selected"]]),
-  "copy-paste": challenge("text", "『集合場所：中央公民館』を選んでコピーし、下のメモへ貼り付けてください。", "コピー元を残したまま、内容を別の場所で使えました。", [["text-copied"], ["text-pasted"]]),
-  "edit-undo": challenge("text", "メモへ文字を追加し、環境の取り消し操作で一度戻してください。", "編集結果を観察し、内容を失わず取り消せました。", [["text-edited"], ["text-undone"]]),
+  typing: challenge("text", "『予定の検索』の入力欄を{{activate}}し、キーボードで『夏祭り 10時』と入力してください。", "入力位置を確かめ、必要な文字を入力できました。", [["target-typed"]]),
+  "text-selection": challenge("text", "文章の『青いタオル』だけを{{selectText}}、選択範囲を確認してください。", "必要な範囲だけを選択できました。", [["text-selected"]]),
+  "copy-paste": challenge("text", "『集合場所：中央公民館』を{{selectText}}、『コピー』を{{activate}}します。メモ欄を{{context}}し、『貼り付け』を{{activate}}してください。", "コピー元を残したまま、内容を別の場所で使えました。", [["text-copied"], ["text-pasted"]]),
+  "edit-undo": challenge("text", "メモ欄を{{activate}}して文字を追加し、画面下の『取り消し』を{{activate}}してください。", "編集結果を観察し、画面上の操作で取り消せました。", [["text-edited"], ["text-undone"]]),
 
-  "browser-search": challenge("web", "『みどり市 図書館』を検索し、公式の検索結果を開いてください。", "目的を検索語にして、結果から行き先を選べました。", [["useful-query"], ["official-opened"]]),
-  "search-refine": challenge("web", "検索結果が広すぎます。『開館時間』を加えて絞り込んでください。", "目的に足りない言葉を加え、結果を絞れました。", [["broad-query"], ["refined-query"]]),
-  "tabs-compare": challenge("web", "公式サイトと地域ブログを別々に開き、両方の日付を確認してください。", "二つの情報を閉じずに比べられました。", [["two-tabs-open"], ["official-date-checked"], ["blog-date-checked"]]),
-  "source-check": challenge("web", "明日の開館時間として信頼できる方を選び、発信元と更新日を確認してください。", "内容だけでなく、誰がいつ出した情報かを確かめました。", [["official-chosen"], ["source-checked"], ["date-checked"]], ["old-source-chosen"]),
+  "browser-search": challenge("web", "検索欄を{{activate}}し、『みどり市 図書館』と入力します。『検索』を{{activate}}し、『中央図書館｜みどり市公式ホームページ』を{{activate}}してください。", "目的を検索語にして、公式ページを開けました。", [["useful-query"], ["official-opened"]]),
+  "search-refine": challenge("web", "検索欄を{{activate}}し、今の検索語の後ろへ『開館時間』と入力します。もう一度『検索』を{{activate}}してください。", "目的に足りない言葉を加え、結果を絞れました。", [["broad-query"], ["refined-query"]]),
+  "tabs-compare": challenge("web", "検索結果の公式サイトと地域ブログを順に{{activate}}して別々のタブで開き、それぞれの『日付を確認』を{{activate}}してください。", "二つの情報を閉じずに比べられました。", [["two-tabs-open"], ["official-date-checked"], ["blog-date-checked"]]),
+  "source-check": challenge("web", "『みどり市公式』のタブを{{activate}}し、『発信元を確認』『更新日を見る』を順に{{activate}}してください。", "内容だけでなく、誰がいつ出した情報かを確かめました。", [["official-chosen"], ["source-checked"], ["date-checked"]], ["old-source-chosen"]),
 
-  "file-concepts": challenge("files", "『参加案内.pdf』が今どこにあるか確認し、『ダウンロード』を開いてください。", "ファイル名だけでなく、保存場所も見られました。", [["location-checked"], ["downloads-opened"]]),
-  "file-organize": challenge("files", "『document1.pdf』を『2026夏祭り案内.pdf』に変更し、『参加資料』へ移してください。", "後で見つけられる名前と場所に整理できました。", [["file-renamed"], ["file-moved"]]),
-  "download-locate": challenge("files", "案内PDFを一度だけダウンロードし、日付とサイズを比べて最新版を開いてください。", "取得の完了、保存先、最新版である根拠を確かめられました。", [["download-started"], ["download-metadata-compared"], ["download-verified"]]),
-  "attach-review": challenge("files", "新しい版の案内だけをメールへ添付し、ファイル名と宛先を確認してください。", "添付できたことだけでなく、送る内容を確かめました。", [["correct-attached"], ["recipient-reviewed"]], ["wrong-file-sent"]),
+  "file-concepts": challenge("files", "左側の『ダウンロード』を{{activate}}し、上部の『場所を確認』を{{activate}}してください。", "ファイル名だけでなく、保存場所も確認できました。", [["location-checked"], ["downloads-opened"]]),
+  "file-organize": challenge("files", "『名前変更』を{{activate}}して『2026夏祭り案内.pdf』と入力し、Enterキーを押します。次に『参加資料へ移動』を{{activate}}してください。", "後で見つけられる名前と場所に整理できました。", [["file-renamed"], ["file-moved"]]),
+  "download-locate": challenge("files", "『参加案内.pdfをダウンロード』を{{activate}}し、『日付とサイズを比べる』を{{activate}}します。最後に2026年版を{{activate}}してください。", "取得の完了、保存先、最新版である根拠を確かめられました。", [["download-started"], ["download-metadata-compared"], ["download-verified"]]),
+  "attach-review": challenge("files", "『ファイルを選ぶ』を{{activate}}し、『2026夏祭り案内.pdf』を{{activate}}します。次に『送信前の3項目を確認』を{{activate}}してください。", "添付できたことだけでなく、送る内容を確かめました。", [["correct-attached"], ["recipient-reviewed"]], ["wrong-file-sent"]),
 
-  "permission-decision": challenge("safety", "地図には『使用中のみ位置情報』を許可し、懐中電灯の『連絡先』は拒否してください。", "目的に必要な範囲だけ許可できました。", [["map-limited-allowed"], ["contacts-denied"]]),
-  "account-recovery": challenge("safety", "『パスワードを忘れた』から練習コードを確認し、誰にも共有せず入力してください。", "推測を繰り返さず、公式の再設定経路を使えました。", [["recovery-opened"], ["code-checked"], ["code-entered"]], ["code-shared"]),
-  "form-review": challenge("safety", "申込内容の確認画面で人数の誤りを見つけ、戻って2人へ直してください。", "入力を失わず戻り、確定前に修正できました。", [["review-opened"], ["form-corrected"], ["form-reviewed"]]),
-  "suspicious-message": challenge("safety", "停止を急がせるメッセージのリンクは使わず、送信元を確認して公式アプリから状態を確かめてください。", "急がされても止まり、別の公式経路で確認できました。", [["sender-inspected"], ["official-route-used"], ["message-reported"]], ["suspicious-link-opened"]),
+  "permission-decision": challenge("safety", "地図の『使用中のみ許可』を{{activate}}し、懐中電灯の『許可しない』を{{activate}}してください。", "目的に必要な範囲だけ許可できました。", [["map-limited-allowed"], ["contacts-denied"]]),
+  "account-recovery": challenge("safety", "『パスワードを忘れた』を{{activate}}し、『練習メールを開く』を{{activate}}します。表示されたコードを入力欄へ入力し、『確認する』を{{activate}}してください。", "推測を繰り返さず、公式の再設定経路を使えました。", [["recovery-opened"], ["code-checked"], ["code-entered"]], ["code-shared"]),
+  "form-review": challenge("safety", "『確認画面へ』を{{activate}}し、『入力へ戻って直す』を{{activate}}します。人数欄を2へ直して確認画面を開き、『内容を確認した』を{{activate}}してください。", "入力を失わず戻り、確定前に修正できました。", [["review-opened"], ["form-corrected"], ["form-reviewed"]]),
+  "suspicious-message": challenge("safety", "メッセージ内のリンクは押さず、『送信元を見る』『公式アプリを開く』『迷惑メッセージとして報告』を順に{{activate}}してください。", "急がされても止まり、別の公式経路で確認できました。", [["sender-inspected"], ["official-route-used"], ["message-reported"]], ["suspicious-link-opened"]),
 
-  "error-reading": challenge("recovery", "保存エラーの詳細を読み、原因に合う確認をしてから再試行してください。", "エラーを次の行動へ変える手掛かりとして読めました。", [["error-inspected"], ["storage-fixed"], ["retry-succeeded"]]),
-  "wifi-recovery": challenge("recovery", "接続表示を確認し、『まちのWi-Fi』へつなぎ直して二つのページを確かめてください。", "状態を一つずつ確認して、つながらない原因を切り分けました。", [["network-inspected"], ["correct-network"], ["connection-verified"]]),
-  "help-search": challenge("recovery", "『文字が急に大きい』を環境名と一緒にヘルプ検索し、表示倍率を戻してください。", "困りごとを検索できる言葉に変えられました。", [["help-query"], ["trusted-help"], ["display-restored"]]),
-  "alternate-solution": challenge("recovery", "使えない方法に固執せず、上部メニューか環境のショートカットで内容をコピーしてください。", "目的を保ったまま別の安全な経路を選べました。", [["primary-blocked"], ["alternate-used"]]),
+  "error-reading": challenge("recovery", "『詳細を見る』を{{activate}}し、表示された『不要な練習ファイルを整理』を{{activate}}します。最後に『保存を再試行』を{{activate}}してください。", "エラーを次の行動へ変える手掛かりとして読めました。", [["error-inspected"], ["storage-fixed"], ["retry-succeeded"]]),
+  "wifi-recovery": challenge("recovery", "『状態を見る』を{{activate}}し、『まちのWi-Fi』を{{activate}}します。最後に『二つのページで確認』を{{activate}}してください。", "状態を一つずつ確認して、つながらない原因を切り分けました。", [["network-inspected"], ["correct-network"], ["connection-verified"]]),
+  "help-search": challenge("recovery", "ヘルプ検索欄を{{activate}}し、『{{deviceName}} 文字が大きい』と入力して『ヘルプ検索』を{{activate}}します。表示された公式ヘルプを{{activate}}してください。", "困りごとを検索できる言葉に変えられました。", [["help-query"], ["trusted-help"], ["display-restored"]]),
+  "alternate-solution": challenge("recovery", "『右クリックを試す』を{{activate}}して使えないことを確認し、次に『編集メニュー → コピー』を{{activate}}してください。", "使えない操作から、画面上の別の方法へ切り替えられました。", [["primary-blocked"], ["alternate-used"]]),
 
   "independent-research": challenge("independent", "明日の中央図書館の時間を、発信元と更新日を含めて自力で確かめてください。", "検索、比較、安全判断を組み合わせて根拠を残せました。", [["independent-query"], ["independent-source"], ["independent-answer"]]),
   "independent-file": challenge("independent", "受け取った申込書を意味のある名前で整理し、正しい宛先への返信に添付してください。", "保存から添付前確認まで、一続きで進められました。", [["independent-saved"], ["independent-organized"], ["independent-attached"]]),
   "independent-settings": challenge("independent", "文字を読みやすくし、行が切れたら一段階戻してちょうどよい値にしてください。", "設定を試し、結果を見て自分に合う状態へ戻せました。", [["independent-setting-open"], ["independent-preview"], ["independent-restored"]]),
   "independent-troubleshoot": challenge("independent", "写真をフォームへ追加できない原因を調べ、元写真を残したままプレビューまで進めてください。", "観察、切り分け、調査、復旧を組み合わせて解決できました。", [["independent-error-read"], ["independent-diagnosed"], ["independent-solved"], ["original-preserved"]]),
 };
+
+const operationWords: Record<JourneyEnvironment, Record<"activate" | "context" | "scroll" | "selectText" | "deviceName", string>> = {
+  windows: {
+    activate: "左クリック",
+    context: "右クリック",
+    scroll: "マウスホイールを下へ回してスクロール",
+    selectText: "マウスの左ボタンを押したままドラッグして選択し",
+    deviceName: "Windows",
+  },
+  mac: {
+    activate: "クリック",
+    context: "Controlクリックまたは2本指クリック",
+    scroll: "トラックパッドを2本指で上へ動かしてスクロール",
+    selectText: "トラックパッドを押したまま動かして選択し",
+    deviceName: "Mac",
+  },
+  iphone: {
+    activate: "タップ",
+    context: "長押し",
+    scroll: "画面を上へスワイプしてスクロール",
+    selectText: "長押しして選択範囲を合わせ",
+    deviceName: "iPhone",
+  },
+  android: {
+    activate: "タップ",
+    context: "長押し",
+    scroll: "画面を上へスワイプしてスクロール",
+    selectText: "長押しして選択範囲を合わせ",
+    deviceName: "Android",
+  },
+};
+
+export function resolveChallengeObjective(challenge: MissionChallenge, environment: JourneyEnvironment) {
+  return challenge.objective.replace(/\{\{(activate|context|scroll|selectText|deviceName)\}\}/g, (_, key: keyof typeof operationWords.windows) => operationWords[environment][key]);
+}
 
 export function evaluateChallenge(challenge: MissionChallenge, events: readonly string[]) {
   const eventSet = new Set(events);

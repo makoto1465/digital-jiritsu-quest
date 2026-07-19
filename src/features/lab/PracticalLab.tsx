@@ -17,7 +17,7 @@ import {
   WebWorkspace,
   type WorkspaceProps,
 } from "@/features/lab/LabWorkspaces";
-import { evaluateChallenge, missionChallenges, type WorkspaceId } from "@/features/lab/mission-challenges";
+import { evaluateChallenge, missionChallenges, resolveChallengeObjective, type WorkspaceId } from "@/features/lab/mission-challenges";
 
 interface ActionLog {
   id: number;
@@ -69,6 +69,16 @@ const workspaceComponents: Record<WorkspaceId, (props: WorkspaceProps) => React.
   independent: (props) => <IndependentWorkspace {...props} />,
 };
 
+function practiceAppName(workspace: WorkspaceId, missionId: string, environment: JourneyEnvironment) {
+  if (workspace === "web") return environment === "windows" ? "Microsoft Edge" : "ブラウザ";
+  if (workspace === "files" || missionId === "context") return environment === "windows" ? "エクスプローラー" : "ファイル";
+  if (workspace === "text" || missionId === "recovery") return "メモ帳";
+  if (workspace === "screens") return environment === "windows" ? "Windows 11 デスクトップ" : `${environmentNames[environment]} ホーム`;
+  if (workspace === "safety") return "設定とメール";
+  if (workspace === "recovery") return "設定とヘルプ";
+  return missionId === "scroll" ? "Microsoft Edge" : "カレンダー";
+}
+
 export function PracticalLab({ completion, environment, missionId = "pointer", onComplete, onAction, onRecovery, freePlay = false }: PracticalLabProps) {
   const challenge = missionChallenges[missionId] ?? missionChallenges.pointer;
   const mission = journeyMissions.find((item) => item.id === missionId);
@@ -88,7 +98,7 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
       ...mission.success.evidence.filter((item) => item.required).map((item) => `evidence:${item.key}`),
     ];
   }, [evaluation.complete, eventIds, mission]);
-  const displayedObjective = challenge.objective;
+  const displayedObjective = resolveChallengeObjective(challenge, environment);
 
   useEffect(() => {
     if (freePlay || !evaluation.complete || completionReported.current) return;
@@ -150,8 +160,18 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
         </div>
       )}
 
-      <div className="practical-lab__body" key={`${activeWorkspace}-${sessionKey}`}>
-        {renderWorkspace(activeWorkspace)}
+      <div className={`practice-device-frame practice-device-frame--${environment}`} key={`${activeWorkspace}-${sessionKey}`}>
+        {environment === "windows" ? <div className="windows-desktop-icons" aria-hidden="true"><span>🗑<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
+        <div className="practice-app-window">
+          <div className="practice-app-window__titlebar">
+            {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <span className="practice-app-icon" aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "e" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span>}
+            <strong>{practiceAppName(activeWorkspace, missionId, environment)}</strong>
+            {environment === "windows" ? <span className="practice-window-controls" aria-hidden="true">—　□　×</span> : environment === "iphone" || environment === "android" ? <span className="mobile-status-icons" aria-hidden="true">11:24　●●●</span> : null}
+          </div>
+          {activeWorkspace === "movement" && missionId === "scroll" ? <div className="practice-browser-toolbar" aria-hidden="true"><span>←</span><span>↻</span><div>🔒 https://www.midori-city.example/event/summer</div><span>…</span></div> : null}
+          <div className="practical-lab__body">{renderWorkspace(activeWorkspace)}</div>
+        </div>
+        {environment === "windows" ? <div className="windows-taskbar" aria-hidden="true"><span className="windows-start">⊞</span><span>⌕</span><span>▰</span><span>e</span><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
       </div>
 
       {evaluation.complete && showSuccess ? (
@@ -172,6 +192,7 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
             {completion ? (
               <nav className="lab-success__actions" aria-label="練習完了後の移動先">
                 <Link ref={completionLinkRef} className="is-primary" href={completion.nextHref}>{completion.nextLabel} <span aria-hidden="true">→</span></Link>
+                <button type="button" onClick={reset}>同じ練習をもう一度</button>
                 <Link href={completion.menuHref}>練習を選ぶ</Link>
                 <Link href="/">ホームへ戻る</Link>
               </nav>

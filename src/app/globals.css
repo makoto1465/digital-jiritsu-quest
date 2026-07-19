@@ -873,9 +873,85 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .lab-success__evidence dl > div:last-child { border: 0; }
 .lab-success__evidence dt { color: var(--ink-soft); font-size: .68rem; }
 .lab-success__evidence dd { margin: 3px 0 0; font-size: .84rem; font-weight: 800; }
-.lab-success__actions { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 8px; margin-top: 15px; }
+.lab-success__actions { display: grid; grid-template-columns: 1.05fr 1.28fr 1fr 1fr; gap: 8px; margin-top: 15px; }
 .lab-success__actions a { min-height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 9px 12px; border: 2px solid var(--teal); border-radius: 10px; background: white; color: var(--teal); font-size: .84rem; font-weight: 800; text-decoration: none; }
 .lab-success__actions a.is-primary { background: var(--teal); color: white; }
+.lab-success__actions button { min-height: 52px; padding: 9px 10px; border: 2px solid var(--teal); border-radius: 10px; background: white; color: var(--teal); font: inherit; font-size: .78rem; font-weight: 800; white-space: nowrap; cursor: pointer; }
+
+/* 現実の機器との対応が分かる練習画面 */
+.practice-device-frame { position: relative; min-height: 490px; padding: 26px 32px 58px; overflow: hidden; border-radius: 0 0 14px 14px; }
+.practice-device-frame--windows { background: radial-gradient(circle at 68% 15%, rgba(99,205,255,.7), transparent 28%), linear-gradient(135deg,#075ea6 0%,#1aa0db 47%,#0874bd 100%); }
+.practice-app-window { position: relative; z-index: 2; width: min(1120px,calc(100% - 76px)); min-height: 390px; margin: auto; overflow: hidden; border: 1px solid rgba(19,43,64,.24); border-radius: 10px; background: #f8fafc; box-shadow: 0 22px 55px rgba(3,31,54,.38); }
+.practice-app-window__titlebar { min-height: 42px; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-bottom: 1px solid #d9e0e8; background: rgba(249,250,252,.96); color: #172033; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; font-size: .78rem; }
+.practice-app-icon { width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 5px; background: #087bd5; color: #fff; font-weight: 800; }
+.mac-title-dots { width: 12px; height: 12px; margin: 0 31px 0 2px; border-radius: 50%; background: #ff5f57; box-shadow: 19px 0 #febc2e,38px 0 #28c840; }
+.mobile-status-icons { margin-left: auto; padding-right: 8px; font-size: .62rem; }
+.practice-window-controls { margin-left: auto; align-self: stretch; display: flex; align-items: center; padding: 0 17px; letter-spacing: 8px; background: #f4f5f7; color: #27303c; }
+.practice-browser-toolbar { min-height: 43px; display: grid; grid-template-columns: 30px 30px 1fr 30px; gap: 5px; align-items: center; padding: 5px 10px; border-bottom: 1px solid #d8dee5; background: #fff; color: #36414c; font: .7rem "Segoe UI",sans-serif; }
+.practice-browser-toolbar > div { min-height: 31px; display: flex; align-items: center; padding: 4px 12px; border-radius: 17px; background: #f0f3f6; }
+.practice-device-frame .practical-lab__body { min-height: 345px; padding: 18px; background: #f3f6f9; }
+.windows-desktop-icons { position: absolute; z-index: 1; top: 30px; left: 13px; display: grid; gap: 18px; color: #fff; font-family: "Segoe UI",sans-serif; font-size: 1.45rem; text-shadow: 0 1px 3px #164365; }
+.windows-desktop-icons span { width: 60px; display: grid; justify-items: center; gap: 2px; }
+.windows-desktop-icons small { font-size: .58rem; font-weight: 600; }
+.windows-taskbar { position: absolute; z-index: 4; inset: auto 0 0; height: 48px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 5px 14px; background: rgba(238,248,255,.9); border-top: 1px solid rgba(255,255,255,.75); backdrop-filter: blur(20px); box-shadow: 0 -4px 18px rgba(17,64,97,.16); }
+.windows-taskbar span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 7px; color: #075da5; font-family: "Segoe UI",sans-serif; font-size: 1rem; font-weight: 900; }
+.windows-taskbar span:hover { background: rgba(255,255,255,.82); }
+.windows-taskbar time { position: absolute; right: 15px; color: #162033; font-size: .65rem; }
+.practice-device-frame--mac { background: linear-gradient(135deg,#7137a5,#f0917e 52%,#f4c978); }
+.mac-dock { position: absolute; z-index: 4; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.5); border-radius: 14px; background: rgba(255,255,255,.45); backdrop-filter: blur(15px); }
+.practice-device-frame--iphone,.practice-device-frame--android { padding: 16px 14px 44px; background: #1c2330; }
+.practice-device-frame--iphone .practice-app-window,.practice-device-frame--android .practice-app-window { width: min(430px,100%); border: 8px solid #070a0f; border-radius: 34px; background: #fff; }
+.practice-device-frame--iphone .practice-app-window__titlebar,.practice-device-frame--android .practice-app-window__titlebar { min-height: 44px; padding-inline: 18px; border: 0; background: #fff; }
+.practice-device-frame--iphone .practice-app-icon,.practice-device-frame--android .practice-app-icon { background: transparent; color: #161d27; }
+.mobile-home-indicator { position: absolute; bottom: 11px; left: 50%; width: 100px; height: 5px; transform: translateX(-50%); border-radius: 999px; background: #fff; }
+
+/* WindowsではMac風の信号ボタンを使わない */
+.practical-lab--windows .lab-panel__bar > span { width: 19px; height: 19px; margin-right: 0; border-radius: 4px; background: linear-gradient(135deg,#f5c642,#e69a00); box-shadow: none; }
+.practical-lab--windows .lab-panel__bar > span::after { content: ""; display: block; width: 10px; height: 7px; margin: 7px auto 0; border-radius: 1px; background: #fff4bd; }
+
+/* Windows 11 メモ帳に近いコピー・貼り付け練習 */
+.copy-practice { position: relative; grid-column: 1 / -1; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 46px; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; }
+.notepad-window { position: relative; min-height: 280px; overflow: visible; border: 1px solid #cbd3dc; border-radius: 8px; background: #fff; box-shadow: 0 7px 18px rgba(27,42,55,.12); }
+.notepad-window > header { min-height: 40px; display: flex; align-items: center; gap: 8px; padding-left: 10px; background: #f7f8fa; border-bottom: 1px solid #dfe4ea; font-size: .75rem; }
+.notepad-icon { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; background: #1976d2; color: white; }
+.window-controls { margin-left: auto; padding: 0 12px; letter-spacing: 6px; }
+.notepad-window > nav { display: flex; gap: 20px; min-height: 34px; align-items: center; padding: 0 12px; border-bottom: 1px solid #e4e8ed; background: #fbfbfc; font-size: .7rem; }
+.notepad-window textarea { width: 100%; min-height: 202px; padding: 18px; border: 0; outline-offset: -3px; resize: none; background: #fff; color: #121a27; font: 1rem/1.85 "Yu Gothic UI", "Segoe UI", sans-serif; }
+.native-context-menu { position: absolute; z-index: 6; top: 148px; left: 37%; width: 170px; padding: 5px; border: 1px solid #cfd5dc; border-radius: 7px; background: rgba(249,250,252,.98); box-shadow: 0 10px 28px rgba(24,37,50,.24); }
+.native-context-menu--target { left: 18%; }
+.native-context-menu button { width: 100%; min-height: 35px; padding: 5px 12px; border: 0; border-radius: 4px; background: transparent; text-align: left; font: inherit; cursor: pointer; }
+.native-context-menu button:hover,.native-context-menu button:focus-visible { background: #dcecff; }
+.native-context-menu button:disabled { color: #9aa2ab; cursor: not-allowed; }
+.copy-practice__status { position: absolute; inset: auto 0 0; min-height: 38px; display: flex; align-items: center; margin: 0; padding: 8px 13px; border: 1px solid #9fc5eb; border-radius: 7px; background: #eaf4ff; color: #163f66; font-size: .76rem; font-weight: 700; }
+.editor-action-bar { display: flex; gap: 8px; margin: 12px 18px 0; }
+.editor-action-bar button { min-height: 39px; padding: 7px 14px; border: 1px solid #aeb7c2; border-radius: 6px; background: #fff; color: #202936; font-weight: 700; cursor: pointer; }
+.editor-action-bar button:disabled { color: #a7adb4; background: #f4f5f6; cursor: not-allowed; }
+
+/* Edge/Chrome系ブラウザに近い上部UI */
+.browser-chrome { background: #e9edf2; border-bottom: 1px solid #c9d0d8; }
+.browser-tabs { min-height: 38px; align-items: end; padding: 5px 8px 0; background: #dce3ea; }
+.browser-tabs button { min-height: 31px; border-radius: 8px 8px 0 0; }
+.browser-tabs button[aria-selected="true"] { background: #fff; }
+.browser-tabs .new-tab-button { width: 34px; flex: 0 0 34px; background: transparent; font-size: 1rem; }
+.browser-toolbar { min-height: 44px; display: grid; grid-template-columns: 34px 34px 1fr 34px; gap: 4px; align-items: center; padding: 5px 9px; background: #fff; }
+.browser-toolbar > button { min-height: 32px; border: 0; border-radius: 6px; background: transparent; color: #303a46; font-size: 1rem; cursor: pointer; }
+.browser-toolbar > button:hover { background: #edf1f5; }
+.browser-address { min-height: 32px; display: flex; align-items: center; gap: 7px; padding: 4px 13px; overflow: hidden; border: 1px solid #d8dde3; border-radius: 18px; background: #f4f6f8; color: #39434d; font: .7rem "Segoe UI",sans-serif; white-space: nowrap; }
+.web-workbench { overflow: hidden; border: 1px solid #bfc8d2; border-radius: 7px; box-shadow: 0 5px 15px rgba(22,40,57,.12); }
+.mission-intro h1[tabindex="-1"]:focus,.mission-practice__heading h1[tabindex="-1"]:focus { outline: none; }
+.device-stage--windows { max-width: none; border: 0; border-radius: 7px; background: #eaf0f6; box-shadow: none; font-family: "Segoe UI","Yu Gothic UI",sans-serif; }
+.device-stage--windows .device-stage__topbar { min-height: 42px; background: #f7f8fa; color: #1d2734; }
+.device-stage--windows .device-stage__screen { height: 380px; background: radial-gradient(circle at 66% 35%,rgba(99,211,255,.78),transparent 26%),linear-gradient(135deg,#0668b4,#23a8df 54%,#0a72bd); }
+.device-stage--windows .app-launcher { place-content: start; justify-items: start; padding: 22px; text-align: left; }
+.device-stage--windows .app-launcher > p { margin: 0 0 16px; padding: 7px 11px; border-radius: 6px; background: rgba(255,255,255,.86); color: #1f2b37; font-weight: 650; }
+.device-stage--windows .app-launcher > div { justify-content: flex-start; gap: 15px; }
+.device-stage--windows .app-launcher button { min-width: 76px; min-height: 84px; border: 0; border-radius: 7px; background: transparent; color: white; text-shadow: 0 1px 3px #17415e; box-shadow: none; }
+.device-stage--windows .app-launcher button:hover { background: rgba(255,255,255,.18); }
+.device-stage--windows .device-stage__switcher { justify-content: center; background: rgba(239,248,255,.95); backdrop-filter: blur(16px); }
+.device-stage--windows .device-stage__switcher button { border-radius: 6px; background: transparent; color: #1e2a36; }
+.device-stage--windows .device-stage__switcher button[aria-pressed="true"] { background: #d7e9f8; color: #064b80; }
+.device-stage--windows .device-stage__shortcut { background: #f6f8fa; color: #4a5968; }
+.device-stage--windows .fake-window { margin: 14px; overflow: hidden; border: 1px solid #b8c2cd; border-radius: 8px; box-shadow: 0 14px 34px rgba(8,45,70,.28); }
 
 @media (max-width: 680px) {
   .curriculum { padding-block: 12px 18px; }
@@ -899,4 +975,12 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
   .lab-success__evidence dl { grid-template-columns: 1fr; gap: 7px; }
   .lab-success__evidence dl > div { padding: 0 0 6px; border: 0; border-bottom: 1px solid var(--line); }
   .lab-success__actions { grid-template-columns: 1fr; }
+  .practice-device-frame { min-height: 500px; padding: 15px 9px 55px; }
+  .practice-app-window { width: 100%; min-height: 400px; }
+  .practice-window-controls,.windows-desktop-icons { display: none; }
+  .practice-device-frame .practical-lab__body { padding: 9px; }
+  .copy-practice { grid-template-columns: 1fr; padding-bottom: 56px; }
+  .notepad-window { min-height: 230px; }
+  .notepad-window textarea { min-height: 150px; }
+  .copy-practice__status { font-size: .68rem; }
 }
