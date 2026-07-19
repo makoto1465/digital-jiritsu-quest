@@ -108,15 +108,15 @@ export function SettingsPanel() {
       <section className="settings-card">
         <div className="settings-card-heading">
           <span><Icon name="shield" /></span>
-          <div><h2>保存とプライバシー</h2><p>ログインせず、このブラウザの中だけに記録します。</p></div>
+          <div><h2>保存とプライバシー</h2><p>ログインせず、このブラウザの中だけに学びの証拠を記録します。</p></div>
         </div>
         <ul className="privacy-list">
           <li><Icon name="check" />氏名やメールアドレスは保存しません</li>
-          <li><Icon name="check" />進捗と表示設定だけを保存します</li>
+          <li><Icon name="check" />完了したミッション、ヒント段階、復旧回数と表示設定だけを保存します</li>
           <li><Icon name="check" />別の端末やブラウザには自動で共有されません</li>
         </ul>
         <div className="danger-zone">
-          <div><strong>学習の記録を初期状態に戻す</strong><p>完了ステージ、XP、バッジ、表示設定が消えます。フリープレイの「初期状態に戻す」とは別の操作です。</p></div>
+          <div><strong>学習の記録を初期状態に戻す</strong><p>完了したミッション、できることの記録、選んだ環境、表示設定が消えます。自由練習の「最初の状態へ」とは別の操作です。</p></div>
           {confirmReset ? (
             <div className="reset-confirm" role="alert" aria-label="記録の初期化確認">
               <p>本当に学習の記録を消しますか？この操作は元に戻せません。</p>

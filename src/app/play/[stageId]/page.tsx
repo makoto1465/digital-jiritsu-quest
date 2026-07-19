@@ -1,14 +1,33 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { stages } from "@/content";
-import { StagePlayer } from "@/features/stages/StagePlayer";
+import { notFound, redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "ステージをプレイ" };
-export function generateStaticParams() { return stages.map((stage) => ({ stageId: stage.id })); }
+import type { LearningEnvironment, MissionId } from "@/lib/journey-types";
 
-export default async function PlayPage({ params }: { params: Promise<{ stageId: string }> }) {
+type MissionRoute = `/mission/${LearningEnvironment}/${MissionId}`;
+
+const legacyStageRoutes = {
+  "w1-pc-copy-paste": "/mission/windows/copy-paste",
+  "w1-mobile-copy-paste": "/mission/iphone/copy-paste",
+  "w2-pc-find-settings": "/mission/windows/menu-discovery",
+  "w2-mobile-more-menu": "/mission/iphone/menu-discovery",
+  "w3-pc-search-tabs": "/mission/windows/tabs-compare",
+  "w3-mobile-search-back": "/mission/iphone/navigation",
+  "w4-pc-password-recovery": "/mission/windows/account-recovery",
+  "w4-mobile-switch-account": "/mission/iphone/permission-decision",
+  "w5-pc-download-attach": "/mission/windows/attach-review",
+  "w5-mobile-share-attach": "/mission/iphone/attach-review",
+  "w6-pc-hidden-button": "/mission/windows/error-reading",
+  "w6-mobile-ask-for-help": "/mission/iphone/help-search",
+  "w7-pc-independent-file": "/mission/windows/independent-file",
+  "w7-mobile-independent-research": "/mission/iphone/independent-research",
+} as const satisfies Record<string, MissionRoute>;
+
+export function generateStaticParams() {
+  return Object.keys(legacyStageRoutes).map((stageId) => ({ stageId }));
+}
+
+export default async function LegacyPlayPage({ params }: { params: Promise<{ stageId: string }> }) {
   const { stageId } = await params;
-  const stage = stages.find((item) => item.id === stageId);
-  if (!stage) notFound();
-  return <StagePlayer stage={stage} />;
+  const target = legacyStageRoutes[stageId as keyof typeof legacyStageRoutes];
+  if (!target) notFound();
+  redirect(target);
 }

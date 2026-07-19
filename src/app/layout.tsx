@@ -7,15 +7,15 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://digital-jiritsu-quest.vercel.app"),
   title: {
-    default: "デジタル自立クエスト",
-    template: "%s | デジタル自立クエスト",
+    default: "PC・スマホ実践アプリ",
+    template: "%s | PC・スマホ実践アプリ",
   },
   description:
-    "試す・調べる・戻すを安心して練習できる、初心者向けデジタル自立トレーニングゲーム。",
-  applicationName: "デジタル自立クエスト",
+    "Windows、Mac、iPhone、Androidの実践操作を、失敗しても戻せる安全な画面で学ぶデジタル自立トレーニング。",
+  applicationName: "PC・スマホ実践アプリ",
   openGraph: {
-    title: "デジタル自立クエスト",
-    description: "分からなくても大丈夫。安全な練習画面で、デジタルの自信を育てよう。",
+    title: "PC・スマホ実践アプリ",
+    description: "分からない画面でも、見つけて、試して、戻せる力を育てよう。",
     type: "website",
     locale: "ja_JP",
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f7f4ec",
+  themeColor: "#101935",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

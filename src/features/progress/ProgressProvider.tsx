@@ -11,6 +11,8 @@ import {
 } from "react";
 
 export type FontSize = "standard" | "large" | "xlarge";
+export type JourneyEnvironment = "windows" | "mac" | "iphone" | "android";
+export type SupportLevel = 0 | 1 | 2 | 3;
 
 export interface UserSettings {
   fontSize: FontSize;
@@ -18,24 +20,50 @@ export interface UserSettings {
   highContrast: boolean;
 }
 
+export interface MissionRecord {
+  missionId: string;
+  environment: JourneyEnvironment;
+  completedAt: string;
+  bestSupportLevel: SupportLevel;
+  attempts: number;
+  hintUses: number;
+  recoveries: number;
+  evidence: string[];
+}
+
 export interface LearningProgress {
-  version: 1;
+  version: 2;
+  selectedEnvironment: JourneyEnvironment | null;
+  completedMissionKeys: string[];
+  missionRecords: Record<string, MissionRecord>;
+  competencyEvidence: Record<string, number>;
+  attempts: number;
+  hintUses: number;
+  recoveries: number;
+  freePlayActionIds: string[];
+  glossaryViews: number;
+  settings: UserSettings;
+  // Compatibility fields keep old bookmarked screens readable during migration.
   completedStageIds: string[];
   practicedDevices: ("pc" | "mobile")[];
   xp: number;
-  attempts: number;
-  hintUses: number;
-  glossaryViews: number;
-  recoveries: number;
-  freePlayActionIds: string[];
   badgeIds: string[];
-  competencyEvidence: Record<string, number>;
-  settings: UserSettings;
 }
 
 interface ProgressContextValue {
   progress: LearningProgress;
   hydrated: boolean;
+  selectEnvironment: (environment: JourneyEnvironment) => void;
+  completeMission: (
+    environment: JourneyEnvironment,
+    missionId: string,
+    competencies: readonly string[],
+    supportLevel: SupportLevel,
+    evidence: readonly string[],
+  ) => void;
+  recordMissionAttempt: (environment: JourneyEnvironment, missionId: string) => void;
+  recordJourneyHint: (environment: JourneyEnvironment, missionId: string) => void;
+  recordJourneyRecovery: (environment: JourneyEnvironment, missionId: string) => void;
   completeStage: (stageId: string, xp: number, competencies: string[], device: "pc" | "mobile") => void;
   recordAttempt: () => void;
   recordHint: () => void;
@@ -46,56 +74,89 @@ interface ProgressContextValue {
   resetProgress: () => void;
 }
 
-const STORAGE_KEY = "digital-jiritsu:profile:v1";
+const STORAGE_KEY = "digital-jiritsu:profile:v2";
+const LEGACY_STORAGE_KEY = "digital-jiritsu:profile:v1";
 
 const defaultProgress: LearningProgress = {
-  version: 1,
+  version: 2,
+  selectedEnvironment: null,
+  completedMissionKeys: [],
+  missionRecords: {},
+  competencyEvidence: {},
+  attempts: 0,
+  hintUses: 0,
+  recoveries: 0,
+  freePlayActionIds: [],
+  glossaryViews: 0,
+  settings: { fontSize: "standard", reduceMotion: false, highContrast: false },
   completedStageIds: [],
   practicedDevices: [],
   xp: 0,
-  attempts: 0,
-  hintUses: 0,
-  glossaryViews: 0,
-  recoveries: 0,
-  freePlayActionIds: [],
   badgeIds: [],
-  competencyEvidence: {},
-  settings: { fontSize: "standard", reduceMotion: false, highContrast: false },
 };
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
 
-function parseStoredProgress(raw: string | null): LearningProgress {
-  if (!raw) return defaultProgress;
+function isEnvironment(value: unknown): value is JourneyEnvironment {
+  return value === "windows" || value === "mac" || value === "iphone" || value === "android";
+}
+
+function strings(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function parseStoredProgress(raw: string | null, legacyRaw: string | null): LearningProgress {
   try {
-    const value = JSON.parse(raw) as Partial<LearningProgress>;
-    if (value.version !== 1 || !Array.isArray(value.completedStageIds)) return defaultProgress;
-    return {
-      ...defaultProgress,
-      ...value,
-      completedStageIds: value.completedStageIds.filter((id): id is string => typeof id === "string"),
-      practicedDevices: Array.isArray(value.practicedDevices)
-        ? value.practicedDevices.filter((device): device is "pc" | "mobile" => device === "pc" || device === "mobile")
-        : [],
-      settings: { ...defaultProgress.settings, ...value.settings },
-      competencyEvidence: value.competencyEvidence ?? {},
-    };
+    if (raw) {
+      const value = JSON.parse(raw) as Partial<LearningProgress>;
+      if (value.version === 2) {
+        return {
+          ...defaultProgress,
+          ...value,
+          selectedEnvironment: isEnvironment(value.selectedEnvironment) ? value.selectedEnvironment : null,
+          completedMissionKeys: strings(value.completedMissionKeys),
+          completedStageIds: strings(value.completedStageIds),
+          freePlayActionIds: strings(value.freePlayActionIds),
+          badgeIds: strings(value.badgeIds),
+          missionRecords: value.missionRecords ?? {},
+          competencyEvidence: value.competencyEvidence ?? {},
+          settings: { ...defaultProgress.settings, ...value.settings },
+        };
+      }
+    }
+    if (legacyRaw) {
+      const legacy = JSON.parse(legacyRaw) as Record<string, unknown>;
+      return {
+        ...defaultProgress,
+        completedStageIds: strings(legacy.completedStageIds),
+        freePlayActionIds: strings(legacy.freePlayActionIds),
+        badgeIds: strings(legacy.badgeIds),
+        attempts: typeof legacy.attempts === "number" ? legacy.attempts : 0,
+        hintUses: typeof legacy.hintUses === "number" ? legacy.hintUses : 0,
+        recoveries: typeof legacy.recoveries === "number" ? legacy.recoveries : 0,
+        glossaryViews: typeof legacy.glossaryViews === "number" ? legacy.glossaryViews : 0,
+        xp: typeof legacy.xp === "number" ? legacy.xp : 0,
+        competencyEvidence:
+          legacy.competencyEvidence && typeof legacy.competencyEvidence === "object"
+            ? (legacy.competencyEvidence as Record<string, number>)
+            : {},
+        practicedDevices: Array.isArray(legacy.practicedDevices)
+          ? legacy.practicedDevices.filter((item): item is "pc" | "mobile" => item === "pc" || item === "mobile")
+          : [],
+        settings:
+          legacy.settings && typeof legacy.settings === "object"
+            ? { ...defaultProgress.settings, ...(legacy.settings as Partial<UserSettings>) }
+            : defaultProgress.settings,
+      };
+    }
   } catch {
     return defaultProgress;
   }
+  return defaultProgress;
 }
 
-function deriveBadges(progress: LearningProgress): string[] {
-  const badges = new Set(progress.badgeIds);
-  if (progress.completedStageIds.length >= 1) badges.add("first-step");
-  if (progress.glossaryViews >= 3) badges.add("researcher");
-  if (progress.completedStageIds.some((id) => id.includes("-pc-"))) badges.add("pc-beginner");
-  if (progress.completedStageIds.some((id) => id.includes("-mobile-"))) badges.add("mobile-beginner");
-  if (progress.recoveries >= 2) badges.add("recovery-expert");
-  if (progress.freePlayActionIds.length >= 6) badges.add("curious-explorer");
-  if (progress.practicedDevices.includes("pc") && progress.practicedDevices.includes("mobile")) badges.add("pc-and-mobile");
-  if (progress.completedStageIds.some((id) => id.startsWith("w7-"))) badges.add("independent-step");
-  return [...badges];
+function missionKey(environment: JourneyEnvironment, missionId: string) {
+  return `${environment}:${missionId}`;
 }
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
@@ -104,7 +165,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setProgress(parseStoredProgress(window.localStorage.getItem(STORAGE_KEY)));
+      setProgress(parseStoredProgress(window.localStorage.getItem(STORAGE_KEY), window.localStorage.getItem(LEGACY_STORAGE_KEY)));
       setHydrated(true);
     }, 0);
     return () => window.clearTimeout(timer);
@@ -114,8 +175,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      if (progress.selectedEnvironment) window.localStorage.setItem("djq-start-environment", progress.selectedEnvironment);
     } catch {
-      // Browser storage is optional; the in-memory experience remains usable.
+      // The lesson still works in memory when storage is disabled.
     }
   }, [hydrated, progress]);
 
@@ -125,70 +187,153 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.contrast = progress.settings.highContrast ? "high" : "standard";
   }, [progress.settings]);
 
-  const completeStage = useCallback(
-    (stageId: string, xp: number, competencies: string[], device: "pc" | "mobile") => {
+  const selectEnvironment = useCallback((environment: JourneyEnvironment) => {
+    setProgress((current) => ({ ...current, selectedEnvironment: environment }));
+  }, []);
+
+  const completeMission = useCallback(
+    (
+      environment: JourneyEnvironment,
+      missionId: string,
+      competencies: readonly string[],
+      supportLevel: SupportLevel,
+      evidence: readonly string[],
+    ) => {
       setProgress((current) => {
-        if (current.completedStageIds.includes(stageId)) return current;
-        const evidence = { ...current.competencyEvidence };
-        competencies.forEach((competency) => {
-          evidence[competency] = (evidence[competency] ?? 0) + 1;
-        });
-        const next: LearningProgress = {
+        const key = missionKey(environment, missionId);
+        const existing = current.missionRecords[key];
+        const competencyEvidence = { ...current.competencyEvidence };
+        if (!existing?.completedAt) {
+          competencies.forEach((competency) => {
+            competencyEvidence[competency] = (competencyEvidence[competency] ?? 0) + 1;
+          });
+        }
+        return {
           ...current,
-          completedStageIds: [...current.completedStageIds, stageId],
-          practicedDevices: current.practicedDevices.includes(device)
-            ? current.practicedDevices
-            : [...current.practicedDevices, device],
-          xp: current.xp + xp,
-          competencyEvidence: evidence,
+          selectedEnvironment: environment,
+          completedMissionKeys: current.completedMissionKeys.includes(key)
+            ? current.completedMissionKeys
+            : [...current.completedMissionKeys, key],
+          competencyEvidence,
+          missionRecords: {
+            ...current.missionRecords,
+            [key]: {
+              missionId,
+              environment,
+              completedAt: new Date().toISOString(),
+              bestSupportLevel: existing ? (Math.min(existing.bestSupportLevel, supportLevel) as SupportLevel) : supportLevel,
+              attempts: Math.max(existing?.attempts ?? 0, 1),
+              hintUses: Math.min(existing?.hintUses ?? supportLevel, supportLevel),
+              recoveries: existing?.recoveries ?? 0,
+              evidence: [...new Set([...(existing?.evidence ?? []), ...evidence])],
+            },
+          },
         };
-        return { ...next, badgeIds: deriveBadges(next) };
       });
     },
     [],
   );
 
+  const updateMissionRecord = useCallback(
+    (environment: JourneyEnvironment, missionId: string, field: "attempts" | "hintUses" | "recoveries") => {
+      setProgress((current) => {
+        const key = missionKey(environment, missionId);
+        const existing = current.missionRecords[key];
+        const base: MissionRecord = existing ?? {
+          missionId,
+          environment,
+          completedAt: "",
+          bestSupportLevel: 3,
+          attempts: 0,
+          hintUses: 0,
+          recoveries: 0,
+          evidence: [],
+        };
+        return {
+          ...current,
+          [field]: current[field] + 1,
+          missionRecords: { ...current.missionRecords, [key]: { ...base, [field]: base[field] + 1 } },
+        };
+      });
+    },
+    [],
+  );
+
+  const recordMissionAttempt = useCallback(
+    (environment: JourneyEnvironment, missionId: string) => updateMissionRecord(environment, missionId, "attempts"),
+    [updateMissionRecord],
+  );
+  const recordJourneyHint = useCallback(
+    (environment: JourneyEnvironment, missionId: string) => updateMissionRecord(environment, missionId, "hintUses"),
+    [updateMissionRecord],
+  );
+  const recordJourneyRecovery = useCallback(
+    (environment: JourneyEnvironment, missionId: string) => updateMissionRecord(environment, missionId, "recoveries"),
+    [updateMissionRecord],
+  );
+
+  const completeStage = useCallback((stageId: string, xp: number, competencies: string[], device: "pc" | "mobile") => {
+    setProgress((current) => {
+      if (current.completedStageIds.includes(stageId)) return current;
+      const evidence = { ...current.competencyEvidence };
+      competencies.forEach((competency) => { evidence[competency] = (evidence[competency] ?? 0) + 1; });
+      return {
+        ...current,
+        completedStageIds: [...current.completedStageIds, stageId],
+        practicedDevices: current.practicedDevices.includes(device) ? current.practicedDevices : [...current.practicedDevices, device],
+        xp: current.xp + xp,
+        competencyEvidence: evidence,
+      };
+    });
+  }, []);
+
   const recordAttempt = useCallback(() => setProgress((current) => ({ ...current, attempts: current.attempts + 1 })), []);
-  const recordHint = useCallback(() => setProgress((current) => ({ ...current, hintUses: current.hintUses + 1, xp: current.xp + 5 })), []);
-  const recordGlossaryView = useCallback(() => {
-    setProgress((current) => {
-      const next = { ...current, glossaryViews: current.glossaryViews + 1 };
-      return { ...next, badgeIds: deriveBadges(next) };
-    });
-  }, []);
-  const recordRecovery = useCallback(() => {
-    setProgress((current) => {
-      const next = { ...current, recoveries: current.recoveries + 1, xp: current.xp + 5 };
-      return { ...next, badgeIds: deriveBadges(next) };
-    });
-  }, []);
+  const recordHint = useCallback(() => setProgress((current) => ({ ...current, hintUses: current.hintUses + 1 })), []);
+  const recordGlossaryView = useCallback(() => setProgress((current) => ({ ...current, glossaryViews: current.glossaryViews + 1 })), []);
+  const recordRecovery = useCallback(() => setProgress((current) => ({ ...current, recoveries: current.recoveries + 1 })), []);
   const recordFreePlayAction = useCallback((actionId: string) => {
-    setProgress((current) => {
-      if (current.freePlayActionIds.includes(actionId)) return current;
-      const next = { ...current, freePlayActionIds: [...current.freePlayActionIds, actionId], xp: current.xp + 2 };
-      return { ...next, badgeIds: deriveBadges(next) };
-    });
+    setProgress((current) => current.freePlayActionIds.includes(actionId)
+      ? current
+      : { ...current, freePlayActionIds: [...current.freePlayActionIds, actionId] });
   }, []);
   const updateSettings = useCallback((settings: Partial<UserSettings>) => {
     setProgress((current) => ({ ...current, settings: { ...current.settings, ...settings } }));
   }, []);
   const resetProgress = useCallback(() => setProgress(defaultProgress), []);
 
-  const value = useMemo<ProgressContextValue>(
-    () => ({
-      progress,
-      hydrated,
-      completeStage,
-      recordAttempt,
-      recordHint,
-      recordGlossaryView,
-      recordRecovery,
-      recordFreePlayAction,
-      updateSettings,
-      resetProgress,
-    }),
-    [progress, hydrated, completeStage, recordAttempt, recordHint, recordGlossaryView, recordRecovery, recordFreePlayAction, updateSettings, resetProgress],
-  );
+  const value = useMemo<ProgressContextValue>(() => ({
+    progress,
+    hydrated,
+    selectEnvironment,
+    completeMission,
+    recordMissionAttempt,
+    recordJourneyHint,
+    recordJourneyRecovery,
+    completeStage,
+    recordAttempt,
+    recordHint,
+    recordGlossaryView,
+    recordRecovery,
+    recordFreePlayAction,
+    updateSettings,
+    resetProgress,
+  }), [
+    progress,
+    hydrated,
+    selectEnvironment,
+    completeMission,
+    recordMissionAttempt,
+    recordJourneyHint,
+    recordJourneyRecovery,
+    completeStage,
+    recordAttempt,
+    recordHint,
+    recordGlossaryView,
+    recordRecovery,
+    recordFreePlayAction,
+    updateSettings,
+    resetProgress,
+  ]);
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
 }
