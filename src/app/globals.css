@@ -3093,10 +3093,10 @@ main {
   .objective-panel > * { grid-column: auto !important; }
   .complete-card { grid-template-columns: 1fr; }
   .complete-card .button-row { grid-column: auto; }
-  .recovery-tray { inset-block-end: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 0.5rem); flex-wrap: nowrap; overflow-x: auto; }
+  .recovery-tray { inset-block-end: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 0.5rem); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; }
   .recovery-tray > span { display: none; }
   .recovery-tray button,
-  .recovery-tray a { flex: 0 0 auto; }
+  .recovery-tray a { min-width: 0; justify-content: center; }
   .pc-workspace { grid-template-columns: 1fr; }
   .pc-app-shelf { grid-template-columns: repeat(8, 4.7rem); border-inline-end: 0; border-block-end: 1px solid var(--border); overflow-x: auto; }
   .pc-app-shelf button { min-height: 4.3rem; }
