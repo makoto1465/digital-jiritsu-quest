@@ -18,6 +18,7 @@ import {
   type WorkspaceProps,
 } from "@/features/lab/LabWorkspaces";
 import { evaluateChallenge, missionChallenges, resolveChallengeObjective, type WorkspaceId } from "@/features/lab/mission-challenges";
+import { getMissionTitle } from "@/lib/journey-copy";
 
 interface ActionLog {
   id: number;
@@ -184,7 +185,7 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
             <div className="lab-success__evidence">
               <p>今回できたこと</p>
               <dl>
-                <div><dt>練習した操作</dt><dd>{mission?.title ?? "操作練習"}</dd></div>
+                <div><dt>練習した操作</dt><dd>{mission ? getMissionTitle(mission, environment) : "操作練習"}</dd></div>
                 <div><dt>使ったヒント</dt><dd>{completion?.hintLevel ? `${completion.hintLevel}回` : "なし"}</dd></div>
                 <div><dt>確認できたこと</dt><dd>{successEvidence.length}件</dd></div>
               </dl>

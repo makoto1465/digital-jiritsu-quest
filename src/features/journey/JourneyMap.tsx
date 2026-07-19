@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { journeyAreas, journeyMissions } from "@/content/journey";
 import { useProgress, type JourneyEnvironment } from "@/features/progress/ProgressProvider";
+import { getAreaTitle, getMissionTitle } from "@/lib/journey-copy";
 import type { JourneyAreaId } from "@/lib/journey-types";
 
 const environmentNames: Record<JourneyEnvironment, string> = {
@@ -67,7 +68,7 @@ export function JourneyMap({ environment }: { environment: JourneyEnvironment })
                   onClick={() => setSelectedAreaId(area.id)}
                   type="button"
                 >
-                  <span>{area.order}</span><strong>{area.title}</strong><small>{unlocked ? `${doneCount} / 4` : "🔒 未開放"}</small>
+                  <span>{area.order}</span><strong>{getAreaTitle(area, environment)}</strong><small>{unlocked ? `${doneCount} / 4` : "🔒 未開放"}</small>
                 </button>
               );
             })}
@@ -84,11 +85,11 @@ export function JourneyMap({ environment }: { environment: JourneyEnvironment })
                   <li key={mission.id}>
                     {unlocked ? (
                       <Link className={done ? "is-complete" : "is-next"} href={`/mission/${environment}/${mission.id}`}>
-                        <span>{done ? "✓" : number}</span><strong>{mission.title}</strong><small>{done ? "もう一度練習できます" : "次に進めます"}</small><b aria-hidden="true">→</b>
+                        <span>{done ? "✓" : number}</span><strong>{getMissionTitle(mission, environment)}</strong><small>{done ? "もう一度練習できます" : "次に進めます"}</small><b aria-hidden="true">→</b>
                       </Link>
                     ) : (
                       <div className="is-locked" aria-disabled="true">
-                        <span>🔒</span><strong>{number}　{mission.title}</strong><small>前の練習が終わると選べます</small>
+                        <span>🔒</span><strong>{number}　{getMissionTitle(mission, environment)}</strong><small>前の練習が終わると選べます</small>
                       </div>
                     )}
                   </li>

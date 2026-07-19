@@ -7,6 +7,7 @@ import { journeyAreas, journeyMissions } from "@/content/journey";
 import { PracticalLab } from "@/features/lab/PracticalLab";
 import { missionChallenges, resolveChallengeObjective } from "@/features/lab/mission-challenges";
 import { useProgress, type JourneyEnvironment, type SupportLevel } from "@/features/progress/ProgressProvider";
+import { getAreaTitle, getMissionTitle } from "@/lib/journey-copy";
 import type { MissionDefinition } from "@/lib/journey-types";
 
 type MissionPhase = "intro" | "practice";
@@ -29,6 +30,8 @@ export function MissionExperience({ environment, mission }: { environment: Journ
   const operation = mission.environmentOperations[environment];
   const challenge = missionChallenges[mission.id];
   const directInstruction = challenge ? resolveChallengeObjective(challenge, environment) : mission.mission;
+  const missionTitle = getMissionTitle(mission, environment);
+  const areaTitle = getAreaTitle(area, environment);
 
   useEffect(() => { headingRef.current?.focus(); }, [phase]);
 
@@ -63,8 +66,8 @@ export function MissionExperience({ environment, mission }: { environment: Journ
       {phase === "intro" ? (
         <section className="mission-intro shell shell--narrow">
           <header>
-            <p>{area.order}. {area.title}　・　{mission.estimatedMinutes}分ほど</p>
-            <h1 ref={headingRef} tabIndex={-1}>{mission.title}</h1>
+            <p>{area.order}. {areaTitle}　・　{mission.estimatedMinutes}分ほど</p>
+            <h1 ref={headingRef} tabIndex={-1}>{missionTitle}</h1>
             <div className="mission-task"><span>やること</span><strong><GlossaryText text={directInstruction} /></strong></div>
           </header>
 
@@ -86,7 +89,7 @@ export function MissionExperience({ environment, mission }: { environment: Journ
 
       {phase === "practice" ? (
         <section className="mission-practice shell shell--wide">
-          <header className="mission-practice__heading"><div><p>{environmentNames[environment]}で練習中</p><h1 ref={headingRef} tabIndex={-1}>{mission.title}</h1></div><span className={`risk-chip risk-chip--${mission.danger.level}`}>{mission.danger.label}</span></header>
+          <header className="mission-practice__heading"><div><p>{environmentNames[environment]}で練習中</p><h1 ref={headingRef} tabIndex={-1}>{missionTitle}</h1></div><span className={`risk-chip risk-chip--${mission.danger.level}`}>{mission.danger.label}</span></header>
           <PracticalLab completion={completion} environment={environment} missionId={mission.id} onComplete={finishMission} onRecovery={() => recordJourneyRecovery(environment, mission.id)} />
           <aside className="hint-drawer" aria-label="ヒント">
             <div><span>ヒント {hintLevel} / 3</span>{hintText ? <p aria-live="polite">{hintText}</p> : <p>困ったときだけ、右のボタンを押してください。</p>}</div>
