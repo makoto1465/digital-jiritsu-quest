@@ -42,6 +42,7 @@ export function WindowsDesktopWorkspace({ emit }: WorkspaceProps) {
   const [lastVisibleModes, setLastVisibleModes] = useState<Record<AppId, VisibleWindowMode>>({ edge: "normal", notepad: "normal" });
   const [windowAnimations, setWindowAnimations] = useState<Partial<Record<AppId, WindowAnimation>>>({});
   const notesOpenedRef = useRef(false);
+  const lastMinimizeSourceRef = useRef<Partial<Record<AppId, "button" | "taskbar">>>({});
   const switchCountRef = useRef(0);
   const zIndexRef = useRef(3);
   const dragRef = useRef<DragState | null>(null);
@@ -99,6 +100,8 @@ export function WindowsDesktopWorkspace({ emit }: WorkspaceProps) {
       setActiveApp(app);
       animateWindow(app, source === "taskbar" ? "restoring-taskbar" : "opening-desktop");
       emit(app === "notepad" ? "window-restored" : "window-taskbar-restored", `${appNames[app]}を最小化前の大きさで戻しました。`);
+      const minimizeSource = lastMinimizeSourceRef.current[app];
+      if (minimizeSource) emit(minimizeSource === "taskbar" ? "window-restored-after-taskbar" : "window-restored-after-button", `${appNames[app]}を最小化前の大きさで戻しました。`);
       return;
     }
     if (windows[app].mode === "normal" || windows[app].mode === "maximized") {
@@ -121,6 +124,7 @@ export function WindowsDesktopWorkspace({ emit }: WorkspaceProps) {
     }
     if (app === "notepad" && wasClosed) {
       emit(notesOpenedRef.current ? "app-reopened" : "notes-opened", notesOpenedRef.current ? "メモ帳をもう一度開きました。" : `${source === "desktop" ? "デスクトップ" : "タスクバー"}からメモ帳を開きました。`);
+      if (source === "desktop") emit("notes-opened-from-desktop", "デスクトップのメモ帳をダブルクリックして開きました。");
       notesOpenedRef.current = true;
     }
   };
@@ -151,6 +155,7 @@ export function WindowsDesktopWorkspace({ emit }: WorkspaceProps) {
   const minimize = (app: AppId, source: "button" | "taskbar" = "button") => {
     if (windowAnimations[app] || (windows[app].mode !== "normal" && windows[app].mode !== "maximized")) return;
     setLastVisibleModes((current) => ({ ...current, [app]: windows[app].mode as VisibleWindowMode }));
+    lastMinimizeSourceRef.current[app] = source;
     animateWindow(app, "minimizing-taskbar", () => {
       updateWindow(app, { mode: "minimized" });
       activateNextVisibleWindow(app);

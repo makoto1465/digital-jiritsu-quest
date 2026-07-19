@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { GlossaryText } from "@/components/learning/GlossaryTerm";
 import { journeyAreas, journeyMissions } from "@/content/journey";
 import { PracticalLab } from "@/features/lab/PracticalLab";
-import { missionChallenges, resolveChallengeObjective } from "@/features/lab/mission-challenges";
 import { useProgress, type JourneyEnvironment, type SupportLevel } from "@/features/progress/ProgressProvider";
-import { getAreaTitle, getMissionTitle } from "@/lib/journey-copy";
+import { getAreaTitle, getMissionSummary, getMissionTitle } from "@/lib/journey-copy";
 import type { MissionDefinition } from "@/lib/journey-types";
 
 type MissionPhase = "intro" | "practice";
@@ -27,10 +25,8 @@ export function MissionExperience({ environment, mission }: { environment: Journ
   const area = journeyAreas.find((item) => item.id === mission.areaId) ?? journeyAreas[0];
   const missionIndex = journeyMissions.findIndex((item) => item.id === mission.id);
   const nextMission = journeyMissions[missionIndex + 1];
-  const operation = mission.environmentOperations[environment];
-  const challenge = missionChallenges[mission.id];
-  const directInstruction = challenge ? resolveChallengeObjective(challenge, environment) : mission.mission;
   const missionTitle = getMissionTitle(mission, environment);
+  const missionSummary = getMissionSummary(mission, environment);
   const areaTitle = getAreaTitle(area, environment);
 
   useEffect(() => { headingRef.current?.focus(); }, [phase]);
@@ -68,16 +64,8 @@ export function MissionExperience({ environment, mission }: { environment: Journ
           <header>
             <p>{area.order}. {areaTitle}　・　{mission.estimatedMinutes}分ほど</p>
             <h1 ref={headingRef} tabIndex={-1}>{missionTitle}</h1>
-            <div className="mission-task"><span>やること</span><strong><GlossaryText text={directInstruction} /></strong></div>
+            <div className="mission-task"><span>練習すること</span><strong>{missionSummary}</strong></div>
           </header>
-
-          <section className="mission-steps" aria-labelledby="steps-title">
-            <h2 id="steps-title">この順番で操作します</h2>
-            <ol>
-              {operation.steps.slice(0, 3).map((step, index) => <li key={step}><span>{index + 1}</span><strong><GlossaryText text={step} /></strong></li>)}
-            </ol>
-            <p><GlossaryText text={operation.difference} /></p>
-          </section>
 
           <div className={`safety-boundary safety-boundary--${mission.danger.level}`}><span>{mission.danger.label}</span><p>{mission.danger.message}</p></div>
           <div className="mission-intro__actions">

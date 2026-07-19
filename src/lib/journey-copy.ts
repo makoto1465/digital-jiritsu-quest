@@ -25,7 +25,7 @@ export function getMissionSummary(
 ) {
   if (environment === "windows") {
     if (mission.id === "navigation") return "インターネットブラウザで施設案内を開き、検索結果へ戻ります。";
-    if (mission.id === "open-close") return "メモ帳を最小化・再表示・閉じる・再起動します。";
+    if (mission.id === "open-close") return "メモ帳を開き、しまう・戻す・閉じる違いを練習します。";
     if (mission.id === "menu-discovery") return "インターネットブラウザの大きさと位置を、本来のウィンドウ操作で変えます。";
   }
   if (mission.id === "pointer" && isTouchDevice(environment)) {

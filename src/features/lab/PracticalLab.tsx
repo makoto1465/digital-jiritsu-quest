@@ -17,7 +17,7 @@ import {
   WebWorkspace,
   type WorkspaceProps,
 } from "@/features/lab/LabWorkspaces";
-import { evaluateChallenge, getChallengeRequirements, missionChallenges, resolveChallengeObjective, type WorkspaceId } from "@/features/lab/mission-challenges";
+import { evaluateChallenge, getChallengeRequirements, getChallengeStepInstructions, missionChallenges, type WorkspaceId } from "@/features/lab/mission-challenges";
 import { getMissionCompletionText, getMissionTitle } from "@/lib/journey-copy";
 
 interface ActionLog {
@@ -109,7 +109,9 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
   const completionReported = useRef(false);
   const completionLinkRef = useRef<HTMLAnchorElement>(null);
   const eventIds = useMemo(() => actions.map((action) => action.eventId), [actions]);
+  const eventIdSet = useMemo(() => new Set(eventIds), [eventIds]);
   const challengeRequirements = useMemo(() => getChallengeRequirements(challenge, environment), [challenge, environment]);
+  const stepInstructions = useMemo(() => getChallengeStepInstructions(missionId, challenge, environment), [challenge, environment, missionId]);
   const evaluation = useMemo(() => evaluateChallenge(challenge, eventIds, environment), [challenge, environment, eventIds]);
   const successEvidence = useMemo(() => {
     if (!evaluation.complete || !mission) return eventIds;
@@ -118,7 +120,9 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
       ...mission.success.evidence.filter((item) => item.required).map((item) => `evidence:${item.key}`),
     ];
   }, [evaluation.complete, eventIds, mission]);
-  const displayedObjective = resolveChallengeObjective(challenge, environment);
+  const firstIncompleteStepIndex = challengeRequirements.findIndex((alternatives) => !alternatives.some((eventId) => eventIdSet.has(eventId)));
+  const currentStepIndex = firstIncompleteStepIndex === -1 ? Math.max(0, challengeRequirements.length - 1) : firstIncompleteStepIndex;
+  const currentInstruction = stepInstructions[Math.min(currentStepIndex, stepInstructions.length - 1)];
   const workspaceOwnsDeviceScreen = activeWorkspace === "screens" || (environment === "windows" && missionId === "recovery");
   const currentAppName = practiceAppName(activeWorkspace, missionId, environment);
 
@@ -267,11 +271,9 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
         </nav>
       ) : (
         <div className="lab-mission-strip">
-          <span>やること</span>
-          <p><GlossaryText text={displayedObjective} /></p>
-          <div className="lab-state-meter" aria-label={`${evaluation.totalGroups}項目中${evaluation.completedGroups}項目の状態を確認`}>
-            {challengeRequirements.map((_, index) => <span className={index < evaluation.completedGroups ? "is-done" : ""} key={index} />)}
-          </div>
+          <span>{currentStepIndex === 0 ? "まず、これだけ" : "次は、これだけ"}</span>
+          <p key={`${missionId}-${currentStepIndex}`} aria-live="polite"><GlossaryText text={currentInstruction} /></p>
+          <strong className="lab-step-count">{Math.min(currentStepIndex + 1, evaluation.totalGroups)} / {evaluation.totalGroups}</strong>
         </div>
       )}
 
@@ -325,7 +327,7 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
       <footer className="practical-lab__footer">
         <div className={`lab-feedback${evaluation.blocked ? " is-warning" : evaluation.complete ? " is-complete" : ""}`} aria-live="polite">
           <span aria-hidden="true">{evaluation.blocked ? "!" : evaluation.complete ? "✓" : actions.length ? "↳" : "○"}</span>
-          <p>{evaluation.blocked ? "確定する前に止める操作です。最初からやり直して、別の方法を試してください。" : evaluation.complete ? "できました。上の画面から、次に進む場所を選べます。" : actions.at(-1)?.message ?? "上の『やること』を見て、画面の中を操作してください。"}</p>
+          <p>{evaluation.blocked ? "確定する前に止める操作です。最初からやり直して、別の方法を試してください。" : evaluation.complete ? "できました。上の画面から、次に進む場所を選べます。" : actions.at(-1)?.message ?? "上の短い案内を見て、画面の中を操作してください。"}</p>
         </div>
         <div className="lab-recovery-actions">
           <button type="button" onClick={reset}>↶ この練習を最初からやり直す</button>

@@ -34,7 +34,7 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "現在地を失わず、戻るボタンで前の画面へ戻れました。",
     [["page-opened"], ["went-back"]],
     undefined,
-    { windows: "画面左上の『🌐 インターネットブラウザ』アイコンを、マウスの左ボタンで素早く2回押します（ダブルクリック）。青い文字の『中央公民館｜施設案内』を1回左クリックし、最後に画面左上の『←（戻る）』ボタンを1回左クリックしてください。" },
+    { windows: "インターネットブラウザを開き、施設案内から検索結果へ戻ります。" },
     { windows: [["browser-opened-from-desktop"], ["page-opened"], ["went-back"]] },
   ),
   "open-close": challenge(
@@ -43,8 +43,8 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "画面を一時的に隠す操作と、閉じる操作を区別できました。",
     [["notes-opened"], ["window-closed"], ["app-reopened"]],
     undefined,
-    { windows: "画面下の青い帯（タスクバー）にある『▤ メモ帳』アイコンを1回左クリックして開きます。同じタスクバーの『▤ メモ帳』をもう一度1回左クリックして最小化し、もう一度1回左クリックして元の大きさで戻します。次にメモ帳の右上にある『―（最小化）』ボタンを1回左クリックし、タスクバーの『▤ メモ帳』で戻します。右上の『×（閉じる）』ボタンを1回左クリックし、最後にタスクバーの『▤ メモ帳』からもう一度開いてください。" },
-    { windows: [["notes-opened"], ["window-minimized-from-taskbar"], ["window-restored"], ["window-minimized-from-button"], ["window-closed"], ["app-reopened"]] },
+    { windows: "メモ帳を開き、最小化・復元・閉じる違いを練習します。" },
+    { windows: [["notes-opened-from-desktop"], ["window-minimized-from-button"], ["window-restored-after-button"], ["window-minimized-from-taskbar"], ["window-restored-after-taskbar"], ["window-closed"], ["app-reopened"]] },
   ),
   "app-switch": challenge(
     "screens",
@@ -52,8 +52,8 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "二つの作業を閉じずに行き来できました。",
     [["two-apps-open"], ["app-switched"]],
     undefined,
-    { windows: "画面下の青い帯（タスクバー）にある『🌐 インターネットブラウザ』と『▤ メモ帳』のアイコンを、それぞれ1回左クリックして開きます。次にタスクバーの『🌐 インターネットブラウザ』を1回左クリックし、その後『▤ メモ帳』を1回左クリックして切り替えてください。" },
-    { windows: [["two-apps-open"], ["app-switched"], ["app-switched-twice"]] },
+    { windows: "インターネットブラウザとメモ帳を、タスクバーで切り替えます。" },
+    { windows: [["browser-opened"], ["notes-opened"], ["app-switched"], ["app-switched-twice"]] },
   ),
   "menu-discovery": challenge(
     "screens",
@@ -61,7 +61,7 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "ウィンドウを元の大きさへ戻し、場所と大きさを変えられました。",
     [["menu-opened"], ["display-opened"]],
     undefined,
-    { windows: "画面下の青い帯（タスクバー）にある『🌐 インターネットブラウザ』アイコンを1回左クリックして、通常の大きさで開きます。右上の『□（最大化）』ボタンを1回左クリックし、画面いっぱいにしてください。次に右上の『❐（元のサイズに戻す）』ボタンを1回左クリックします。最後に、ウィンドウ上部のアプリ名が書かれた白い帯（タイトルバー）を左へドラッグしてください。" },
+    { windows: "インターネットブラウザの大きさと場所を変えます。" },
     { windows: [["browser-opened"], ["window-maximized"], ["window-restored-down"], ["window-moved"]] },
   ),
 
@@ -75,7 +75,7 @@ export const missionChallenges: Record<string, MissionChallenge> = {
   "tabs-compare": challenge("web", "検索結果の公式サイトと地域ブログを順に{{activate}}して別々のタブで開き、それぞれの『日付を確認』を{{activate}}してください。", "二つの情報を閉じずに比べられました。", [["two-tabs-open"], ["official-date-checked"], ["blog-date-checked"]]),
   "source-check": challenge("web", "『みどり市公式』のタブを{{activate}}し、『発信元を確認』『更新日を見る』を順に{{activate}}してください。", "内容だけでなく、誰がいつ出した情報かを確かめました。", [["official-chosen"], ["source-checked"], ["date-checked"]], ["old-source-chosen"]),
 
-  "file-concepts": challenge("files", "左側の『ダウンロード』を{{activate}}し、上部の『場所を確認』を{{activate}}してください。", "ファイル名だけでなく、保存場所も確認できました。", [["location-checked"], ["downloads-opened"]]),
+  "file-concepts": challenge("files", "左側の『ダウンロード』を{{activate}}し、上部の『場所を確認』を{{activate}}してください。", "ファイル名だけでなく、保存場所も確認できました。", [["downloads-opened"], ["location-checked"]]),
   "file-organize": challenge("files", "『名前変更』を{{activate}}して『2026夏祭り案内.pdf』と入力し、Enterキーを押します。次に『参加資料へ移動』を{{activate}}してください。", "後で見つけられる名前と場所に整理できました。", [["file-renamed"], ["file-moved"]]),
   "download-locate": challenge("files", "『参加案内.pdfをダウンロード』を{{activate}}し、『日付とサイズを比べる』を{{activate}}します。最後に2026年版を{{activate}}してください。", "取得の完了、保存先、最新版である根拠を確かめられました。", [["download-started"], ["download-metadata-compared"], ["download-verified"]]),
   "attach-review": challenge("files", "『ファイルを選ぶ』を{{activate}}し、『2026夏祭り案内.pdf』を{{activate}}します。次に『送信前の3項目を確認』を{{activate}}してください。", "添付できたことだけでなく、送る内容を確かめました。", [["correct-attached"], ["recipient-reviewed"]], ["wrong-file-sent"]),
@@ -127,9 +127,87 @@ const operationWords: Record<JourneyEnvironment, Record<"activate" | "context" |
   },
 };
 
+type StepInstructionSet = { default: readonly string[] } & Partial<Record<JourneyEnvironment, readonly string[]>>;
+
+const missionStepInstructions: Record<string, StepInstructionSet> = {
+  pointer: { default: ["予定表の『7月19日』を{{activate}}してください。"] },
+  scroll: { default: ["お知らせの中で{{scroll}}してください。", "『持ち物　青いタオル』を{{activate}}してください。"] },
+  context: { default: ["『参考資料』フォルダーを{{context}}してください。", "表示された『情報を見る』を{{activate}}してください。"] },
+  recovery: { default: ["『集合場所：中央公民館』を選択し、『コピー』を{{activate}}してください。", "メモ欄を{{context}}し、『貼り付け』を{{activate}}してください。"] },
+  navigation: {
+    default: ["『中央公民館｜施設案内』を{{activate}}してください。", "左上の『← 戻る』を{{activate}}してください。"],
+    windows: ["デスクトップ左側の『🌐 インターネットブラウザ』をダブルクリックしてください。", "青い文字の『中央公民館｜施設案内』を1回左クリックしてください。", "左上の『←（戻る）』を1回左クリックしてください。"],
+  },
+  "open-close": {
+    default: ["『メモ』を{{activate}}して開いてください。", "開いたメモを閉じてください。", "『メモ』をもう一度{{activate}}してください。"],
+    windows: [
+      "デスクトップ左側の『▤ メモ帳』をダブルクリックしてください。",
+      "メモ帳の右上にある『―（最小化）』を1回左クリックしてください。",
+      "画面下のタスクバーにある『▤ メモ帳』を1回左クリックしてください。",
+      "同じタスクバーの『▤ メモ帳』をもう一度1回左クリックしてください。",
+      "タスクバーの『▤ メモ帳』を1回左クリックして戻してください。",
+      "メモ帳の右上にある『×（閉じる）』を1回左クリックしてください。",
+      "タスクバーの『▤ メモ帳』を1回左クリックして、もう一度開いてください。",
+    ],
+  },
+  "app-switch": {
+    default: ["『ブラウザ』と『メモ』を開いてください。", "画面下の切替ボタンで別のアプリへ切り替えてください。"],
+    windows: [
+      "タスクバーの『🌐 インターネットブラウザ』を1回左クリックしてください。",
+      "タスクバーの『▤ メモ帳』を1回左クリックしてください。",
+      "タスクバーの『🌐 インターネットブラウザ』を1回左クリックしてください。",
+      "タスクバーの『▤ メモ帳』を1回左クリックしてください。",
+    ],
+  },
+  "menu-discovery": {
+    default: ["画面右上の『…』を{{activate}}してください。", "表示された『表示』を{{activate}}してください。"],
+    windows: [
+      "タスクバーの『🌐 インターネットブラウザ』を1回左クリックしてください。",
+      "右上の『□（最大化）』を1回左クリックしてください。",
+      "右上の『❐（元のサイズに戻す）』を1回左クリックしてください。",
+      "上部の白い帯（タイトルバー）を左へドラッグしてください。",
+    ],
+  },
+  typing: { default: ["入力欄を{{activate}}し、『夏祭り 10時』と入力してください。"] },
+  "text-selection": { default: ["文章の『青いタオル』だけを{{selectText}}ください。"] },
+  "copy-paste": { default: ["『集合場所：中央公民館』を選択し、『コピー』を{{activate}}してください。", "メモ欄を{{context}}し、『貼り付け』を{{activate}}してください。"] },
+  "edit-undo": { default: ["メモ欄へ文字を追加してください。", "画面下の『取り消し』を{{activate}}してください。"] },
+  "browser-search": { default: ["検索欄へ『みどり市 図書館』と入力し、『検索』を{{activate}}してください。", "『中央図書館｜みどり市公式ホームページ』を{{activate}}してください。"] },
+  "search-refine": { default: ["今の検索語で一度『検索』を{{activate}}してください。", "検索語の後ろへ『開館時間』を追加し、もう一度検索してください。"] },
+  "tabs-compare": { default: ["公式サイトと地域ブログを、別々のタブで開いてください。", "公式サイトで『日付を確認』を{{activate}}してください。", "地域ブログで『日付を確認』を{{activate}}してください。"] },
+  "source-check": { default: ["『みどり市公式』のタブを{{activate}}してください。", "『発信元を確認』を{{activate}}してください。", "『更新日を見る』を{{activate}}してください。"] },
+  "file-concepts": { default: ["左側の『ダウンロード』を{{activate}}してください。", "上部の『場所を確認』を{{activate}}してください。"] },
+  "file-organize": { default: ["『名前変更』で『2026夏祭り案内.pdf』と入力し、Enterキーを押してください。", "『参加資料へ移動』を{{activate}}してください。"] },
+  "download-locate": { default: ["『参加案内.pdfをダウンロード』を{{activate}}してください。", "『日付とサイズを比べる』を{{activate}}してください。", "2026年版のファイルを{{activate}}してください。"] },
+  "attach-review": { default: ["『ファイルを選ぶ』から『2026夏祭り案内.pdf』を選んでください。", "『送信前の3項目を確認』を{{activate}}してください。"] },
+  "permission-decision": { default: ["地図の『使用中のみ許可』を{{activate}}してください。", "懐中電灯の『許可しない』を{{activate}}してください。"] },
+  "account-recovery": { default: ["『パスワードを忘れた』を{{activate}}してください。", "『練習メールを開く』を{{activate}}してください。", "表示されたコードを入力し、『確認する』を{{activate}}してください。"] },
+  "form-review": { default: ["『確認画面へ』を{{activate}}してください。", "入力画面へ戻り、人数を2へ直してください。", "もう一度確認画面を開き、『内容を確認した』を{{activate}}してください。"] },
+  "suspicious-message": { default: ["リンクは押さず、『送信元を見る』を{{activate}}してください。", "『公式アプリを開く』を{{activate}}してください。", "『迷惑メッセージとして報告』を{{activate}}してください。"] },
+  "error-reading": { default: ["『詳細を見る』を{{activate}}してください。", "『不要な練習ファイルを整理』を{{activate}}してください。", "『保存を再試行』を{{activate}}してください。"] },
+  "wifi-recovery": { default: ["『状態を見る』を{{activate}}してください。", "『まちのWi-Fi』を{{activate}}してください。", "『二つのページで確認』を{{activate}}してください。"] },
+  "help-search": { default: ["『{{deviceName}} 文字が大きい』と入力し、『ヘルプ検索』を{{activate}}してください。", "表示された公式ヘルプを{{activate}}してください。", "公式ヘルプの手順で表示を戻してください。"] },
+  "alternate-solution": { default: ["『右クリックを試す』を{{activate}}してください。", "『編集メニュー → コピー』を{{activate}}してください。"] },
+  "independent-research": { default: ["施設名・日付・知りたいことを入れて検索してください。", "発信元と更新日を確認してください。", "明日の開館時間を回答してください。"] },
+  "independent-file": { default: ["申込書を保存してください。", "後で分かる名前と場所へ整理してください。", "正しい宛先への返信に添付してください。"] },
+  "independent-settings": { default: ["文字サイズの設定を開いてください。", "文字を一段階大きくし、表示を確認してください。", "行が切れたら一段階戻してください。"] },
+  "independent-troubleshoot": { default: ["表示されたエラーを確認してください。", "原因を一つずつ調べてください。", "元写真を残したまま問題を直してください。", "写真のプレビューまで進んでください。"] },
+};
+
+function resolveOperationWords(text: string, environment: JourneyEnvironment) {
+  return text.replace(/\{\{(activate|context|scroll|selectText|deviceName)\}\}/g, (_, key: keyof typeof operationWords.windows) => operationWords[environment][key]);
+}
+
 export function resolveChallengeObjective(challenge: MissionChallenge, environment: JourneyEnvironment) {
   const objective = challenge.objectiveByEnvironment?.[environment] ?? challenge.objective;
-  return objective.replace(/\{\{(activate|context|scroll|selectText|deviceName)\}\}/g, (_, key: keyof typeof operationWords.windows) => operationWords[environment][key]);
+  return resolveOperationWords(objective, environment);
+}
+
+export function getChallengeStepInstructions(missionId: string, challenge: MissionChallenge, environment: JourneyEnvironment) {
+  const configured = missionStepInstructions[missionId];
+  const steps = configured?.[environment] ?? configured?.default;
+  if (!steps?.length) return [resolveChallengeObjective(challenge, environment)];
+  return steps.map((step) => resolveOperationWords(step, environment));
 }
 
 export function getChallengeRequirements(challenge: MissionChallenge, environment: JourneyEnvironment) {
