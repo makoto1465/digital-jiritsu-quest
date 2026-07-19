@@ -27,6 +27,8 @@ interface ActionLog {
 }
 
 type AppWindowMode = "closed" | "maximized" | "minimized" | "normal";
+type VisibleAppWindowMode = Exclude<AppWindowMode, "closed" | "minimized">;
+type AppWindowAnimation = "opening-taskbar" | "restoring-taskbar" | "minimizing-taskbar" | "maximizing" | "restoring-down";
 
 interface PracticalLabProps {
   completion?: {
@@ -98,9 +100,12 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
   const [sessionKey, setSessionKey] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [appWindowMode, setAppWindowMode] = useState<AppWindowMode>("normal");
+  const [lastVisibleAppWindowMode, setLastVisibleAppWindowMode] = useState<VisibleAppWindowMode>("normal");
+  const [appWindowAnimation, setAppWindowAnimation] = useState<AppWindowAnimation | null>(environment === "windows" ? "opening-taskbar" : null);
   const [appWindowPosition, setAppWindowPosition] = useState({ x: 0, y: 0 });
   const sequenceRef = useRef(0);
   const appWindowDragRef = useRef<{ moved: boolean; originX: number; originY: number; startX: number; startY: number } | null>(null);
+  const appWindowAnimationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionReported = useRef(false);
   const completionLinkRef = useRef<HTMLAnchorElement>(null);
   const eventIds = useMemo(() => actions.map((action) => action.eventId), [actions]);
@@ -116,6 +121,29 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
   const displayedObjective = resolveChallengeObjective(challenge, environment);
   const workspaceOwnsDeviceScreen = activeWorkspace === "screens" || (environment === "windows" && missionId === "recovery");
   const currentAppName = practiceAppName(activeWorkspace, missionId, environment);
+
+  const animateAppWindow = (animation: AppWindowAnimation, onFinish?: () => void) => {
+    if (appWindowAnimationTimerRef.current) clearTimeout(appWindowAnimationTimerRef.current);
+    setAppWindowAnimation(animation);
+    appWindowAnimationTimerRef.current = setTimeout(() => {
+      setAppWindowAnimation(null);
+      appWindowAnimationTimerRef.current = null;
+      onFinish?.();
+    }, animation === "minimizing-taskbar" ? 230 : 210);
+  };
+
+  useEffect(() => {
+    if (environment !== "windows" || appWindowAnimation !== "opening-taskbar" || appWindowAnimationTimerRef.current) return;
+    appWindowAnimationTimerRef.current = setTimeout(() => {
+      setAppWindowAnimation(null);
+      appWindowAnimationTimerRef.current = null;
+    }, 210);
+  }, [appWindowAnimation, environment]);
+
+  useEffect(() => () => {
+    if (appWindowAnimationTimerRef.current) clearTimeout(appWindowAnimationTimerRef.current);
+    appWindowAnimationTimerRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (freePlay || !evaluation.complete || completionReported.current) return;
@@ -142,9 +170,48 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
     setSessionKey((current) => current + 1);
     setShowSuccess(false);
     setAppWindowMode("normal");
+    setLastVisibleAppWindowMode("normal");
     setAppWindowPosition({ x: 0, y: 0 });
+    if (environment === "windows") animateAppWindow("opening-taskbar");
     completionReported.current = false;
     onRecovery?.();
+  };
+
+  const minimizeAppWindow = () => {
+    if (appWindowAnimation || (appWindowMode !== "normal" && appWindowMode !== "maximized")) return;
+    setLastVisibleAppWindowMode(appWindowMode);
+    animateAppWindow("minimizing-taskbar", () => setAppWindowMode("minimized"));
+  };
+
+  const toggleAppWindowMaximize = () => {
+    if (appWindowAnimation) return;
+    const nextMode: VisibleAppWindowMode = appWindowMode === "maximized" ? "normal" : "maximized";
+    setAppWindowMode(nextMode);
+    setLastVisibleAppWindowMode(nextMode);
+    animateAppWindow(appWindowMode === "maximized" ? "restoring-down" : "maximizing");
+  };
+
+  const closeAppWindow = () => {
+    if (appWindowAnimationTimerRef.current) clearTimeout(appWindowAnimationTimerRef.current);
+    appWindowAnimationTimerRef.current = null;
+    setAppWindowAnimation(null);
+    setAppWindowMode("closed");
+  };
+
+  const activateTaskbarAppWindow = () => {
+    if (appWindowAnimation) return;
+    if (appWindowMode === "closed") {
+      setAppWindowMode("normal");
+      setLastVisibleAppWindowMode("normal");
+      animateAppWindow("opening-taskbar");
+      return;
+    }
+    if (appWindowMode === "minimized") {
+      setAppWindowMode(lastVisibleAppWindowMode);
+      animateAppWindow("restoring-taskbar");
+      return;
+    }
+    minimizeAppWindow();
   };
 
   const beginAppWindowDrag = (event: ReactPointerEvent<HTMLElement>) => {
@@ -195,7 +262,7 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
       {freePlay ? (
         <nav className="lab-workspace-tabs" aria-label="練習する場所">
           {(Object.keys(workspaceLabels) as WorkspaceId[]).filter((id) => id !== "independent").map((id) => (
-            <button aria-pressed={activeWorkspace === id} key={id} type="button" onClick={() => { setActiveWorkspace(id); setAppWindowMode("normal"); setAppWindowPosition({ x: 0, y: 0 }); }}>{workspaceLabels[id]}</button>
+            <button aria-pressed={activeWorkspace === id} key={id} type="button" onClick={() => { setActiveWorkspace(id); setAppWindowMode("normal"); setLastVisibleAppWindowMode("normal"); setAppWindowPosition({ x: 0, y: 0 }); if (environment === "windows") animateAppWindow("opening-taskbar"); }}>{workspaceLabels[id]}</button>
           ))}
         </nav>
       ) : (
@@ -211,20 +278,20 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
       <div className={`practice-device-frame practice-device-frame--${environment}${workspaceOwnsDeviceScreen ? " is-device-desktop" : ""}`} key={`${activeWorkspace}-${sessionKey}`}>
         {workspaceOwnsDeviceScreen ? renderWorkspace(activeWorkspace) : <>
           {environment === "windows" ? <div className="windows-desktop-icons" aria-hidden="true"><span>🗑<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
-          {appWindowMode !== "closed" && appWindowMode !== "minimized" ? <div className={`practice-app-window is-${appWindowMode}`} style={appWindowMode === "normal" ? { transform: `translate(${appWindowPosition.x}px, ${appWindowPosition.y}px)` } : undefined}>
+          {appWindowMode !== "closed" && appWindowMode !== "minimized" ? <div className={`practice-app-window is-${appWindowMode}${appWindowAnimation ? ` is-${appWindowAnimation}` : ""}`} style={appWindowMode === "normal" ? { transform: `translate(${appWindowPosition.x}px, ${appWindowPosition.y}px)` } : undefined}>
             <div className="practice-app-window__titlebar" onPointerDown={beginAppWindowDrag} onPointerMove={dragAppWindow} onPointerUp={endAppWindowDrag}>
               {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <span className="practice-app-icon" aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "🌐" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span>}
               <strong>{currentAppName}</strong>
               {environment === "windows" ? <div className="practice-window-controls">
-                <button type="button" aria-label={`${currentAppName}の「―（最小化）」ボタン`} title="―（最小化）" onClick={() => setAppWindowMode("minimized")}>―</button>
-                <button type="button" aria-label={appWindowMode === "maximized" ? `${currentAppName}の「❐（元のサイズに戻す）」ボタン` : `${currentAppName}の「□（最大化）」ボタン`} title={appWindowMode === "maximized" ? "❐（元のサイズに戻す）" : "□（最大化）"} onClick={() => setAppWindowMode((current) => current === "maximized" ? "normal" : "maximized")}>{appWindowMode === "maximized" ? "❐" : "□"}</button>
-                <button className="is-close" type="button" aria-label={`${currentAppName}の「×（閉じる）」ボタン`} title="×（閉じる）" onClick={() => setAppWindowMode("closed")}>×</button>
+                <button type="button" aria-label={`${currentAppName}の「―（最小化）」ボタン`} title="―（最小化）" onClick={minimizeAppWindow}>―</button>
+                <button type="button" aria-label={appWindowMode === "maximized" ? `${currentAppName}の「❐（元のサイズに戻す）」ボタン` : `${currentAppName}の「□（最大化）」ボタン`} title={appWindowMode === "maximized" ? "❐（元のサイズに戻す）" : "□（最大化）"} onClick={toggleAppWindowMaximize}>{appWindowMode === "maximized" ? "❐" : "□"}</button>
+                <button className="is-close" type="button" aria-label={`${currentAppName}の「×（閉じる）」ボタン`} title="×（閉じる）" onClick={closeAppWindow}>×</button>
               </div> : environment === "iphone" || environment === "android" ? <span className="mobile-status-icons" aria-hidden="true">11:24　●●●</span> : null}
             </div>
             {activeWorkspace === "movement" && missionId === "scroll" ? <div className="practice-browser-toolbar" aria-hidden="true"><span>←</span><span>↻</span><div>🔒 https://www.midori-city.example/event/summer</div><span>…</span></div> : null}
             <div className="practical-lab__body">{renderWorkspace(activeWorkspace)}</div>
           </div> : null}
-          {environment === "windows" ? <div className="windows-taskbar"><span className="windows-start" aria-hidden="true">⊞</span><span aria-hidden="true">⌕</span><span aria-hidden="true">▰</span><button className={appWindowMode !== "closed" ? "is-open" : ""} type="button" aria-label={`${currentAppName}を表示`} onClick={() => setAppWindowMode("normal")}><span aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "🌐" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span></button><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
+          {environment === "windows" ? <div className="windows-taskbar"><span className="windows-start" aria-hidden="true">⊞</span><span aria-hidden="true">⌕</span><span aria-hidden="true">▰</span><button className={appWindowMode !== "closed" ? "is-open" : ""} aria-pressed={appWindowMode === "normal" || appWindowMode === "maximized"} type="button" aria-label={appWindowMode === "closed" ? `${currentAppName}を開く` : appWindowMode === "minimized" ? `${currentAppName}を最小化前の大きさで表示` : `${currentAppName}を最小化`} onClick={activateTaskbarAppWindow}><span aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "🌐" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span></button><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
         </>}
       </div>
 

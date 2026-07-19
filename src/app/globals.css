@@ -982,6 +982,32 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .win11-desktop-icons button span { font-size: 1.7rem; }
 .win11-window { position: absolute; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(56,66,78,.36); border-radius: 9px; background: #fff; box-shadow: 0 18px 48px rgba(6,35,58,.34); transition: box-shadow .15s ease; }
 .win11-window.is-active { box-shadow: 0 22px 58px rgba(3,28,48,.48); }
+.win11-window.is-opening-desktop { transform-origin: 0 0; animation: win11-window-open-desktop 210ms cubic-bezier(.16,1,.3,1) both; }
+.win11-window.is-opening-taskbar,.win11-window.is-restoring-taskbar,.practice-app-window.is-opening-taskbar,.practice-app-window.is-restoring-taskbar { transform-origin: 50% 100%; animation: win11-window-rise-from-taskbar 210ms cubic-bezier(.16,1,.3,1) both; }
+.win11-window.is-minimizing-taskbar,.practice-app-window.is-minimizing-taskbar { z-index: 110 !important; pointer-events: none; transform-origin: 50% 100%; animation: win11-window-shrink-to-taskbar 230ms cubic-bezier(.55,0,1,.45) both; }
+.win11-window.is-maximizing,.practice-app-window.is-maximizing { transform-origin: 50% 50%; animation: win11-window-maximize 210ms cubic-bezier(.16,1,.3,1) both; }
+.win11-window.is-restoring-down,.practice-app-window.is-restoring-down { transform-origin: 50% 50%; animation: win11-window-restore-down 210ms cubic-bezier(.16,1,.3,1) both; }
+@keyframes win11-window-open-desktop {
+  from { opacity: .2; transform: translate(-28%,-24%) scale(.2,.16); filter: blur(1px); }
+  to { opacity: 1; transform: translate(0,0) scale(1); filter: blur(0); }
+}
+@keyframes win11-window-rise-from-taskbar {
+  from { opacity: .18; transform: translateY(52%) scale(.22,.1); filter: blur(1px); }
+  70% { opacity: 1; }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes win11-window-shrink-to-taskbar {
+  from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  to { opacity: .08; transform: translateY(58%) scale(.2,.08); filter: blur(1px); }
+}
+@keyframes win11-window-maximize {
+  from { opacity: .75; transform: scale(.78,.72); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes win11-window-restore-down {
+  from { opacity: .82; transform: scale(1.22,1.28); }
+  to { opacity: 1; transform: scale(1); }
+}
 .win11-window.is-normal { width: min(74%, 880px); height: 68%; min-width: 520px; min-height: 350px; }
 .win11-window.is-maximized { inset: 0 0 48px; width: auto; height: auto; border-width: 0; border-radius: 0; }
 .win11-window--notepad.is-normal { width: min(60%, 710px); height: 58%; }

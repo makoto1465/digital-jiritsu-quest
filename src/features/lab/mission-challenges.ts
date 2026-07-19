@@ -43,8 +43,8 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "画面を一時的に隠す操作と、閉じる操作を区別できました。",
     [["notes-opened"], ["window-closed"], ["app-reopened"]],
     undefined,
-    { windows: "画面下の青い帯（タスクバー）にある『▤ メモ帳』アイコンを1回左クリックして開きます。メモ帳の右上にある『―（最小化）』ボタンを1回左クリックします。タスクバーの『▤ メモ帳』を1回左クリックして戻した後、右上の『×（閉じる）』ボタンを1回左クリックします。最後にタスクバーの『▤ メモ帳』を1回左クリックして、もう一度開いてください。" },
-    { windows: [["notes-opened"], ["window-minimized"], ["window-restored"], ["window-closed"], ["app-reopened"]] },
+    { windows: "画面下の青い帯（タスクバー）にある『▤ メモ帳』アイコンを1回左クリックして開きます。同じタスクバーの『▤ メモ帳』をもう一度1回左クリックして最小化し、もう一度1回左クリックして元の大きさで戻します。次にメモ帳の右上にある『―（最小化）』ボタンを1回左クリックし、タスクバーの『▤ メモ帳』で戻します。右上の『×（閉じる）』ボタンを1回左クリックし、最後にタスクバーの『▤ メモ帳』からもう一度開いてください。" },
+    { windows: [["notes-opened"], ["window-minimized-from-taskbar"], ["window-restored"], ["window-minimized-from-button"], ["window-closed"], ["app-reopened"]] },
   ),
   "app-switch": challenge(
     "screens",
@@ -61,8 +61,8 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "ウィンドウを元の大きさへ戻し、場所と大きさを変えられました。",
     [["menu-opened"], ["display-opened"]],
     undefined,
-    { windows: "画面下の青い帯（タスクバー）にある『🌐 インターネットブラウザ』アイコンを1回左クリックして開きます。右上の『❐（元のサイズに戻す）』ボタンを1回左クリックします。次に、ウィンドウ上部のアプリ名が書かれた白い帯（タイトルバー）を左へドラッグします。最後に右上の『□（最大化）』ボタンを1回左クリックしてください。" },
-    { windows: [["browser-opened"], ["window-restored-down"], ["window-moved"], ["window-maximized"]] },
+    { windows: "画面下の青い帯（タスクバー）にある『🌐 インターネットブラウザ』アイコンを1回左クリックして、通常の大きさで開きます。右上の『□（最大化）』ボタンを1回左クリックし、画面いっぱいにしてください。次に右上の『❐（元のサイズに戻す）』ボタンを1回左クリックします。最後に、ウィンドウ上部のアプリ名が書かれた白い帯（タイトルバー）を左へドラッグしてください。" },
+    { windows: [["browser-opened"], ["window-maximized"], ["window-restored-down"], ["window-moved"]] },
   ),
 
   typing: challenge("text", "『予定の検索』の入力欄を{{activate}}し、キーボードで『夏祭り 10時』と入力してください。", "入力位置を確かめ、必要な文字を入力できました。", [["target-typed"]]),
