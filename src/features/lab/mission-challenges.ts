@@ -8,6 +8,8 @@ export interface MissionChallenge {
   successNote: string;
   required: readonly (readonly string[])[];
   forbidden?: readonly string[];
+  objectiveByEnvironment?: Partial<Record<JourneyEnvironment, string>>;
+  requiredByEnvironment?: Partial<Record<JourneyEnvironment, readonly (readonly string[])[]>>;
 }
 
 const challenge = (
@@ -16,7 +18,9 @@ const challenge = (
   successNote: string,
   required: readonly (readonly string[])[],
   forbidden?: readonly string[],
-): MissionChallenge => ({ workspace, objective, successNote, required, forbidden });
+  objectiveByEnvironment?: Partial<Record<JourneyEnvironment, string>>,
+  requiredByEnvironment?: Partial<Record<JourneyEnvironment, readonly (readonly string[])[]>>,
+): MissionChallenge => ({ workspace, objective, successNote, required, forbidden, objectiveByEnvironment, requiredByEnvironment });
 
 export const missionChallenges: Record<string, MissionChallenge> = {
   pointer: challenge("movement", "予定表の『7月19日』を{{activate}}してください。", "ねらった対象を操作し、画面の変化を確認できました。", [["target-selected"]]),
@@ -24,10 +28,42 @@ export const missionChallenges: Record<string, MissionChallenge> = {
   context: challenge("movement", "『参考資料』フォルダーを{{context}}し、表示された『情報を見る』を{{activate}}してください。", "フォルダーのメニューを開き、情報を確認できました。", [["context-opened"], ["info-inspected"]]),
   recovery: challenge("movement", "見本文の『集合場所：中央公民館』を{{selectText}}、『コピー』を{{activate}}します。次にメモ欄を{{context}}し、『貼り付け』を{{activate}}してください。", "見本文を残したまま、同じ文章をメモへ貼り付けられました。", [["text-copied"], ["text-pasted"]]),
 
-  navigation: challenge("screens", "ブラウザの『中央公民館｜施設案内』を{{activate}}して開き、左上の『← 戻る』を{{activate}}してください。", "現在地を失わず、戻るボタンで前の画面へ戻れました。", [["page-opened"], ["went-back"]]),
-  "open-close": challenge("screens", "デスクトップの『メモ』を{{activate}}して開き、右上の『閉じる』を{{activate}}します。その後、『メモ』をもう一度{{activate}}してください。", "アプリを閉じることと、内容を消すことを区別できました。", [["notes-opened"], ["window-closed"], ["app-reopened"]]),
-  "app-switch": challenge("screens", "『ブラウザ』と『メモ』を{{activate}}して開き、画面下の切替ボタンを{{activate}}して2回切り替えてください。", "二つの作業を閉じずに行き来できました。", [["two-apps-open"], ["app-switched"]]),
-  "menu-discovery": challenge("screens", "画面右上の『…』を{{activate}}し、表示された『表示』を{{activate}}してください。", "画面上の印からメニューを開けました。", [["menu-opened"], ["display-opened"]]),
+  navigation: challenge(
+    "screens",
+    "ブラウザの『中央公民館｜施設案内』を{{activate}}して開き、左上の『← 戻る』を{{activate}}してください。",
+    "現在地を失わず、戻るボタンで前の画面へ戻れました。",
+    [["page-opened"], ["went-back"]],
+    undefined,
+    { windows: "画面下の『Microsoft Edge』を左クリックして開き、『中央公民館｜施設案内』を左クリックします。次に、左上の『戻る』を左クリックしてください。" },
+    { windows: [["browser-opened"], ["page-opened"], ["went-back"]] },
+  ),
+  "open-close": challenge(
+    "screens",
+    "『メモ』を{{activate}}して開き、閉じてからもう一度開いてください。",
+    "画面を一時的に隠す操作と、閉じる操作を区別できました。",
+    [["notes-opened"], ["window-closed"], ["app-reopened"]],
+    undefined,
+    { windows: "画面下の『メモ帳』を左クリックして開き、右上の『最小化』を左クリックします。画面下の『メモ帳』で戻した後、『閉じる』を左クリックし、画面下の『メモ帳』からもう一度開いてください。" },
+    { windows: [["notes-opened"], ["window-minimized"], ["window-restored"], ["window-closed"], ["app-reopened"]] },
+  ),
+  "app-switch": challenge(
+    "screens",
+    "『ブラウザ』と『メモ』を{{activate}}して開き、画面下の切替ボタンを{{activate}}して2回切り替えてください。",
+    "二つの作業を閉じずに行き来できました。",
+    [["two-apps-open"], ["app-switched"]],
+    undefined,
+    { windows: "画面下の『Microsoft Edge』と『メモ帳』を左クリックして両方開きます。次に画面下のボタンで『Microsoft Edge』へ切り替え、もう一度『メモ帳』へ切り替えてください。" },
+    { windows: [["two-apps-open"], ["app-switched"], ["app-switched-twice"]] },
+  ),
+  "menu-discovery": challenge(
+    "screens",
+    "画面右上の『…』を{{activate}}し、表示された『表示』を{{activate}}してください。",
+    "ウィンドウを元の大きさへ戻し、場所と大きさを変えられました。",
+    [["menu-opened"], ["display-opened"]],
+    undefined,
+    { windows: "画面下の『Microsoft Edge』を左クリックして開きます。右上の『元のサイズに戻す』を左クリックし、タイトルバーを左へドラッグしてください。最後に『最大化』を左クリックしてください。" },
+    { windows: [["browser-opened"], ["window-restored-down"], ["window-moved"], ["window-maximized"]] },
+  ),
 
   typing: challenge("text", "『予定の検索』の入力欄を{{activate}}し、キーボードで『夏祭り 10時』と入力してください。", "入力位置を確かめ、必要な文字を入力できました。", [["target-typed"]]),
   "text-selection": challenge("text", "文章の『青いタオル』だけを{{selectText}}、選択範囲を確認してください。", "必要な範囲だけを選択できました。", [["text-selected"]]),
@@ -92,17 +128,23 @@ const operationWords: Record<JourneyEnvironment, Record<"activate" | "context" |
 };
 
 export function resolveChallengeObjective(challenge: MissionChallenge, environment: JourneyEnvironment) {
-  return challenge.objective.replace(/\{\{(activate|context|scroll|selectText|deviceName)\}\}/g, (_, key: keyof typeof operationWords.windows) => operationWords[environment][key]);
+  const objective = challenge.objectiveByEnvironment?.[environment] ?? challenge.objective;
+  return objective.replace(/\{\{(activate|context|scroll|selectText|deviceName)\}\}/g, (_, key: keyof typeof operationWords.windows) => operationWords[environment][key]);
 }
 
-export function evaluateChallenge(challenge: MissionChallenge, events: readonly string[]) {
+export function getChallengeRequirements(challenge: MissionChallenge, environment: JourneyEnvironment) {
+  return challenge.requiredByEnvironment?.[environment] ?? challenge.required;
+}
+
+export function evaluateChallenge(challenge: MissionChallenge, events: readonly string[], environment: JourneyEnvironment) {
   const eventSet = new Set(events);
   const blocked = challenge.forbidden?.some((event) => eventSet.has(event)) ?? false;
-  const completedGroups = challenge.required.filter((alternatives) => alternatives.some((event) => eventSet.has(event))).length;
+  const required = getChallengeRequirements(challenge, environment);
+  const completedGroups = required.filter((alternatives) => alternatives.some((event) => eventSet.has(event))).length;
   return {
     blocked,
-    complete: !blocked && completedGroups === challenge.required.length,
+    complete: !blocked && completedGroups === required.length,
     completedGroups,
-    totalGroups: challenge.required.length,
+    totalGroups: required.length,
   };
 }

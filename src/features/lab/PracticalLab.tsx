@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 import { GlossaryText } from "@/components/learning/GlossaryTerm";
 import { journeyMissions } from "@/content/journey";
@@ -17,14 +17,16 @@ import {
   WebWorkspace,
   type WorkspaceProps,
 } from "@/features/lab/LabWorkspaces";
-import { evaluateChallenge, missionChallenges, resolveChallengeObjective, type WorkspaceId } from "@/features/lab/mission-challenges";
-import { getMissionTitle } from "@/lib/journey-copy";
+import { evaluateChallenge, getChallengeRequirements, missionChallenges, resolveChallengeObjective, type WorkspaceId } from "@/features/lab/mission-challenges";
+import { getMissionCompletionText, getMissionTitle } from "@/lib/journey-copy";
 
 interface ActionLog {
   id: number;
   eventId: string;
   message: string;
 }
+
+type AppWindowMode = "closed" | "maximized" | "minimized" | "normal";
 
 interface PracticalLabProps {
   completion?: {
@@ -72,11 +74,19 @@ const workspaceComponents: Record<WorkspaceId, (props: WorkspaceProps) => React.
 
 function practiceAppName(workspace: WorkspaceId, missionId: string, environment: JourneyEnvironment) {
   if (workspace === "web") return environment === "windows" ? "Microsoft Edge" : "ブラウザ";
+  if (missionId === "attach-review") return "メール";
   if (workspace === "files" || missionId === "context") return environment === "windows" ? "エクスプローラー" : "ファイル";
+  if (missionId === "typing") return "カレンダー";
   if (workspace === "text" || missionId === "recovery") return "メモ帳";
   if (workspace === "screens") return environment === "windows" ? "Windows 11 デスクトップ" : `${environmentNames[environment]} ホーム`;
-  if (workspace === "safety") return "設定とメール";
-  if (workspace === "recovery") return "設定とヘルプ";
+  if (missionId === "permission-decision") return "設定";
+  if (missionId === "account-recovery") return "Microsoft アカウント";
+  if (missionId === "form-review") return "参加申込フォーム";
+  if (missionId === "suspicious-message") return "メール";
+  if (workspace === "safety") return "設定";
+  if (missionId === "wifi-recovery") return "ネットワークとインターネット";
+  if (missionId === "help-search") return "Microsoft Edge";
+  if (workspace === "recovery") return "設定";
   return missionId === "scroll" ? "Microsoft Edge" : "カレンダー";
 }
 
@@ -87,11 +97,15 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
   const [actions, setActions] = useState<ActionLog[]>([]);
   const [sessionKey, setSessionKey] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [appWindowMode, setAppWindowMode] = useState<AppWindowMode>("normal");
+  const [appWindowPosition, setAppWindowPosition] = useState({ x: 0, y: 0 });
   const sequenceRef = useRef(0);
+  const appWindowDragRef = useRef<{ moved: boolean; originX: number; originY: number; startX: number; startY: number } | null>(null);
   const completionReported = useRef(false);
   const completionLinkRef = useRef<HTMLAnchorElement>(null);
   const eventIds = useMemo(() => actions.map((action) => action.eventId), [actions]);
-  const evaluation = useMemo(() => evaluateChallenge(challenge, eventIds), [challenge, eventIds]);
+  const challengeRequirements = useMemo(() => getChallengeRequirements(challenge, environment), [challenge, environment]);
+  const evaluation = useMemo(() => evaluateChallenge(challenge, eventIds, environment), [challenge, environment, eventIds]);
   const successEvidence = useMemo(() => {
     if (!evaluation.complete || !mission) return eventIds;
     return [
@@ -100,6 +114,8 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
     ];
   }, [evaluation.complete, eventIds, mission]);
   const displayedObjective = resolveChallengeObjective(challenge, environment);
+  const workspaceOwnsDeviceScreen = activeWorkspace === "screens" || (environment === "windows" && missionId === "recovery");
+  const currentAppName = practiceAppName(activeWorkspace, missionId, environment);
 
   useEffect(() => {
     if (freePlay || !evaluation.complete || completionReported.current) return;
@@ -125,8 +141,39 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
     setActions([]);
     setSessionKey((current) => current + 1);
     setShowSuccess(false);
+    setAppWindowMode("normal");
+    setAppWindowPosition({ x: 0, y: 0 });
     completionReported.current = false;
     onRecovery?.();
+  };
+
+  const beginAppWindowDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    if (environment !== "windows" || appWindowMode !== "normal" || (event.target as HTMLElement).closest("button")) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    appWindowDragRef.current = {
+      moved: false,
+      originX: appWindowPosition.x,
+      originY: appWindowPosition.y,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+  };
+
+  const dragAppWindow = (event: ReactPointerEvent<HTMLElement>) => {
+    const drag = appWindowDragRef.current;
+    if (!drag) return;
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (Math.abs(deltaX) + Math.abs(deltaY) > 6) drag.moved = true;
+    setAppWindowPosition({
+      x: Math.max(-180, Math.min(180, drag.originX + deltaX)),
+      y: Math.max(-18, Math.min(95, drag.originY + deltaY)),
+    });
+  };
+
+  const endAppWindowDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    appWindowDragRef.current = null;
   };
 
   const renderWorkspace = (workspace: WorkspaceId) => workspaceComponents[workspace]({
@@ -148,7 +195,7 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
       {freePlay ? (
         <nav className="lab-workspace-tabs" aria-label="練習する場所">
           {(Object.keys(workspaceLabels) as WorkspaceId[]).filter((id) => id !== "independent").map((id) => (
-            <button aria-pressed={activeWorkspace === id} key={id} type="button" onClick={() => setActiveWorkspace(id)}>{workspaceLabels[id]}</button>
+            <button aria-pressed={activeWorkspace === id} key={id} type="button" onClick={() => { setActiveWorkspace(id); setAppWindowMode("normal"); setAppWindowPosition({ x: 0, y: 0 }); }}>{workspaceLabels[id]}</button>
           ))}
         </nav>
       ) : (
@@ -156,23 +203,29 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
           <span>やること</span>
           <p><GlossaryText text={displayedObjective} /></p>
           <div className="lab-state-meter" aria-label={`${evaluation.totalGroups}項目中${evaluation.completedGroups}項目の状態を確認`}>
-            {challenge.required.map((_, index) => <span className={index < evaluation.completedGroups ? "is-done" : ""} key={index} />)}
+            {challengeRequirements.map((_, index) => <span className={index < evaluation.completedGroups ? "is-done" : ""} key={index} />)}
           </div>
         </div>
       )}
 
-      <div className={`practice-device-frame practice-device-frame--${environment}`} key={`${activeWorkspace}-${sessionKey}`}>
-        {environment === "windows" ? <div className="windows-desktop-icons" aria-hidden="true"><span>🗑<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
-        <div className="practice-app-window">
-          <div className="practice-app-window__titlebar">
-            {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <span className="practice-app-icon" aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "e" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span>}
-            <strong>{practiceAppName(activeWorkspace, missionId, environment)}</strong>
-            {environment === "windows" ? <span className="practice-window-controls" aria-hidden="true">—　□　×</span> : environment === "iphone" || environment === "android" ? <span className="mobile-status-icons" aria-hidden="true">11:24　●●●</span> : null}
-          </div>
-          {activeWorkspace === "movement" && missionId === "scroll" ? <div className="practice-browser-toolbar" aria-hidden="true"><span>←</span><span>↻</span><div>🔒 https://www.midori-city.example/event/summer</div><span>…</span></div> : null}
-          <div className="practical-lab__body">{renderWorkspace(activeWorkspace)}</div>
-        </div>
-        {environment === "windows" ? <div className="windows-taskbar" aria-hidden="true"><span className="windows-start">⊞</span><span>⌕</span><span>▰</span><span>e</span><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
+      <div className={`practice-device-frame practice-device-frame--${environment}${workspaceOwnsDeviceScreen ? " is-device-desktop" : ""}`} key={`${activeWorkspace}-${sessionKey}`}>
+        {workspaceOwnsDeviceScreen ? renderWorkspace(activeWorkspace) : <>
+          {environment === "windows" ? <div className="windows-desktop-icons" aria-hidden="true"><span>🗑<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
+          {appWindowMode !== "closed" && appWindowMode !== "minimized" ? <div className={`practice-app-window is-${appWindowMode}`} style={appWindowMode === "normal" ? { transform: `translate(${appWindowPosition.x}px, ${appWindowPosition.y}px)` } : undefined}>
+            <div className="practice-app-window__titlebar" onPointerDown={beginAppWindowDrag} onPointerMove={dragAppWindow} onPointerUp={endAppWindowDrag}>
+              {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <span className="practice-app-icon" aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "e" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span>}
+              <strong>{currentAppName}</strong>
+              {environment === "windows" ? <div className="practice-window-controls">
+                <button type="button" aria-label={`${currentAppName}を最小化`} onClick={() => setAppWindowMode("minimized")}>—</button>
+                <button type="button" aria-label={appWindowMode === "maximized" ? `${currentAppName}を元のサイズに戻す` : `${currentAppName}を最大化`} onClick={() => setAppWindowMode((current) => current === "maximized" ? "normal" : "maximized")}>{appWindowMode === "maximized" ? "❐" : "□"}</button>
+                <button className="is-close" type="button" aria-label={`${currentAppName}を閉じる`} onClick={() => setAppWindowMode("closed")}>×</button>
+              </div> : environment === "iphone" || environment === "android" ? <span className="mobile-status-icons" aria-hidden="true">11:24　●●●</span> : null}
+            </div>
+            {activeWorkspace === "movement" && missionId === "scroll" ? <div className="practice-browser-toolbar" aria-hidden="true"><span>←</span><span>↻</span><div>🔒 https://www.midori-city.example/event/summer</div><span>…</span></div> : null}
+            <div className="practical-lab__body">{renderWorkspace(activeWorkspace)}</div>
+          </div> : null}
+          {environment === "windows" ? <div className="windows-taskbar"><span className="windows-start" aria-hidden="true">⊞</span><span aria-hidden="true">⌕</span><span aria-hidden="true">▰</span><button className={appWindowMode !== "closed" ? "is-open" : ""} type="button" aria-label={`${currentAppName}を表示`} onClick={() => setAppWindowMode("normal")}><span aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "e" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span></button><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
+        </>}
       </div>
 
       {evaluation.complete && showSuccess ? (
@@ -181,7 +234,7 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
             <div className="lab-success__mark" aria-hidden="true"><span>✓</span></div>
             <p>正しく操作できました</p>
             <h2 id="lab-success-title">できました！</h2>
-            <p>{mission?.afterCompletion ?? challenge.successNote}</p>
+            <p>{mission ? getMissionCompletionText(mission, environment) : challenge.successNote}</p>
             <div className="lab-success__evidence">
               <p>今回できたこと</p>
               <dl>

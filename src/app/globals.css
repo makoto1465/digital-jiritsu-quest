@@ -358,6 +358,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .device-stage__shortcut { margin: 0; padding: 6px 12px; background: var(--night); color: #c3cde0; font-size: .62rem; text-align: center; }
 
 .text-workbench { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.text-workbench.is-single,.files-workbench.is-single,.safety-workbench.is-single,.recovery-workbench.is-single { grid-template-columns: minmax(0,1fr); }
 .text-workbench .lab-panel { padding-bottom: 18px; }
 .field-label { display: block; margin: 16px 18px 6px; font-size: .72rem; font-weight: 700; }
 .selection-source, .text-workbench input, .note-editor > textarea { width: calc(100% - 36px); margin-inline: 18px; padding: 13px; border: 1px solid var(--line-strong); border-radius: 9px; background: white; }
@@ -882,11 +883,16 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .practice-device-frame { position: relative; min-height: 490px; padding: 26px 32px 58px; overflow: hidden; border-radius: 0 0 14px 14px; }
 .practice-device-frame--windows { background: radial-gradient(circle at 68% 15%, rgba(99,205,255,.7), transparent 28%), linear-gradient(135deg,#075ea6 0%,#1aa0db 47%,#0874bd 100%); }
 .practice-app-window { position: relative; z-index: 2; width: min(1120px,calc(100% - 76px)); min-height: 390px; margin: auto; overflow: hidden; border: 1px solid rgba(19,43,64,.24); border-radius: 10px; background: #f8fafc; box-shadow: 0 22px 55px rgba(3,31,54,.38); }
-.practice-app-window__titlebar { min-height: 42px; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-bottom: 1px solid #d9e0e8; background: rgba(249,250,252,.96); color: #172033; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; font-size: .78rem; }
+.practice-app-window__titlebar { min-height: 42px; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-bottom: 1px solid #d9e0e8; background: rgba(249,250,252,.96); color: #172033; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; font-size: .78rem; touch-action: none; cursor: move; }
 .practice-app-icon { width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 5px; background: #087bd5; color: #fff; font-weight: 800; }
 .mac-title-dots { width: 12px; height: 12px; margin: 0 31px 0 2px; border-radius: 50%; background: #ff5f57; box-shadow: 19px 0 #febc2e,38px 0 #28c840; }
 .mobile-status-icons { margin-left: auto; padding-right: 8px; font-size: .62rem; }
-.practice-window-controls { margin-left: auto; align-self: stretch; display: flex; align-items: center; padding: 0 17px; letter-spacing: 8px; background: #f4f5f7; color: #27303c; }
+.practice-window-controls { height: 42px; margin-left: auto; align-self: stretch; display: flex; align-items: center; background: #f4f5f7; color: #27303c; }
+.practice-window-controls button { width: 47px; min-height: 42px; padding: 0; border: 0; border-radius: 0; background: transparent; color: inherit; font: .85rem "Segoe UI",sans-serif; cursor: default; }
+.practice-window-controls button:hover { background: #e2e5e9; }
+.practice-window-controls button.is-close:hover { background: #c42b1c; color: #fff; }
+.practice-app-window.is-maximized { position: absolute; inset: 0 0 48px; width: auto; min-height: 0; margin: 0; border-width: 0; border-radius: 0; }
+.practice-app-window.is-maximized .practical-lab__body { min-height: calc(100% - 86px); }
 .practice-browser-toolbar { min-height: 43px; display: grid; grid-template-columns: 30px 30px 1fr 30px; gap: 5px; align-items: center; padding: 5px 10px; border-bottom: 1px solid #d8dee5; background: #fff; color: #36414c; font: .7rem "Segoe UI",sans-serif; }
 .practice-browser-toolbar > div { min-height: 31px; display: flex; align-items: center; padding: 4px 12px; border-radius: 17px; background: #f0f3f6; }
 .practice-device-frame .practical-lab__body { min-height: 345px; padding: 18px; background: #f3f6f9; }
@@ -896,6 +902,10 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .windows-taskbar { position: absolute; z-index: 4; inset: auto 0 0; height: 48px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 5px 14px; background: rgba(238,248,255,.9); border-top: 1px solid rgba(255,255,255,.75); backdrop-filter: blur(20px); box-shadow: 0 -4px 18px rgba(17,64,97,.16); }
 .windows-taskbar span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 7px; color: #075da5; font-family: "Segoe UI",sans-serif; font-size: 1rem; font-weight: 900; }
 .windows-taskbar span:hover { background: rgba(255,255,255,.82); }
+.windows-taskbar > button { position: relative; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 7px; background: transparent; color: #075da5; cursor: default; }
+.windows-taskbar > button:hover { background: rgba(255,255,255,.82); }
+.windows-taskbar > button > span { width: auto; height: auto; }
+.windows-taskbar > button.is-open::after { content: ""; position: absolute; bottom: 1px; left: 50%; width: 14px; height: 3px; transform: translateX(-50%); border-radius: 2px; background: #1682c4; }
 .windows-taskbar time { position: absolute; right: 15px; color: #162033; font-size: .65rem; }
 .practice-device-frame--mac { background: linear-gradient(135deg,#7137a5,#f0917e 52%,#f4c978); }
 .mac-dock { position: absolute; z-index: 4; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.5); border-radius: 14px; background: rgba(255,255,255,.45); backdrop-filter: blur(15px); }
@@ -911,6 +921,14 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 
 /* Windows 11 メモ帳に近いコピー・貼り付け練習 */
 .copy-practice { position: relative; grid-column: 1 / -1; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 46px; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; }
+.copy-practice--windows { min-height: 620px; align-content: center; padding: 54px 28px 108px 96px; background: radial-gradient(circle at 70% 22%,rgba(130,226,255,.82),transparent 23%),linear-gradient(135deg,#075ea6,#199dd7 50%,#0871b8); }
+.copy-practice--windows .notepad-window { z-index: 2; box-shadow: 0 18px 44px rgba(4,38,62,.38); }
+.copy-desktop-icons { position: absolute; z-index: 1; top: 18px; left: 14px; display: grid; gap: 14px; color: #fff; text-align: center; text-shadow: 0 1px 3px #153d5a; }
+.copy-desktop-icons span { width: 68px; display: grid; justify-items: center; gap: 3px; font-size: 1.5rem; }
+.copy-desktop-icons small { font-size: .62rem; }
+.copy-practice--windows .copy-practice__status { inset: auto 26px 59px 96px; z-index: 5; }
+.copy-practice--windows .copy-taskbar { inset: auto 0 0; }
+.copy-taskbar > span { width: 36px; height: 36px; display: grid; place-items: center; color: #075da5; }
 .notepad-window { position: relative; min-height: 280px; overflow: visible; border: 1px solid #cbd3dc; border-radius: 8px; background: #fff; box-shadow: 0 7px 18px rgba(27,42,55,.12); }
 .notepad-window > header { min-height: 40px; display: flex; align-items: center; gap: 8px; padding-left: 10px; background: #f7f8fa; border-bottom: 1px solid #dfe4ea; font-size: .75rem; }
 .notepad-icon { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; background: #1976d2; color: white; }
@@ -953,6 +971,57 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .device-stage--windows .device-stage__shortcut { background: #f6f8fa; color: #4a5968; }
 .device-stage--windows .fake-window { margin: 14px; overflow: hidden; border: 1px solid #b8c2cd; border-radius: 8px; box-shadow: 0 14px 34px rgba(8,45,70,.28); }
 
+/* 画面とアプリ練習は単一のWindows 11デスクトップで行う */
+.practice-device-frame.is-device-desktop { min-height: 620px; padding: 0; background: #087cc3; border-radius: 0 0 14px 14px; }
+.win11-desktop { position: relative; width: 100%; height: 620px; overflow: hidden; background: #087cc3; color: #111827; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; user-select: none; }
+.win11-wallpaper { position: absolute; inset: 0 0 48px; background: radial-gradient(circle at 71% 24%, rgba(123,224,255,.95), transparent 22%), radial-gradient(circle at 58% 58%, rgba(33,168,222,.62), transparent 36%), linear-gradient(135deg,#075da6 0%,#118cc9 47%,#0a6db1 100%); }
+.win11-wallpaper::after { content: ""; position: absolute; width: 310px; height: 310px; right: 15%; top: 9%; border: 24px solid rgba(158,232,255,.24); border-radius: 18% 55% 20% 48%; transform: rotate(-12deg); filter: blur(2px); }
+.win11-desktop-icons { position: absolute; z-index: 1; top: 18px; left: 14px; display: grid; gap: 13px; }
+.win11-desktop-icons button { width: 72px; min-height: 74px; display: grid; place-items: center; gap: 2px; padding: 5px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #fff; font: 600 .67rem/1.2 "Segoe UI", "Yu Gothic UI", sans-serif; text-shadow: 0 1px 3px #153d5a; cursor: default; }
+.win11-desktop-icons button:hover { border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.16); }
+.win11-desktop-icons button span { font-size: 1.7rem; }
+.win11-window { position: absolute; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(56,66,78,.36); border-radius: 9px; background: #fff; box-shadow: 0 18px 48px rgba(6,35,58,.34); transition: box-shadow .15s ease; }
+.win11-window.is-active { box-shadow: 0 22px 58px rgba(3,28,48,.48); }
+.win11-window.is-normal { width: min(74%, 880px); height: 68%; min-width: 520px; min-height: 350px; }
+.win11-window.is-maximized { inset: 0 0 48px; width: auto; height: auto; border-width: 0; border-radius: 0; }
+.win11-window--notepad.is-normal { width: min(60%, 710px); height: 58%; }
+.win11-titlebar { min-height: 42px; display: flex; align-items: center; gap: 9px; padding-left: 11px; border-bottom: 1px solid #dce2e8; background: #f7f8fa; touch-action: none; cursor: move; }
+.win11-titlebar strong { overflow: hidden; font-size: .76rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.edge-app-icon,.notepad-app-icon { width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 5px; background: linear-gradient(135deg,#0ea5e9,#0870c9 55%,#0ea572); color: white; font-size: .8rem; font-weight: 900; }
+.notepad-app-icon { background: #1976d2; }
+.win11-window-controls { height: 42px; margin-left: auto; display: flex; align-self: stretch; }
+.win11-window-controls button { width: 48px; min-height: 42px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #1f2937; font: 500 .9rem "Segoe UI", sans-serif; cursor: default; }
+.win11-window-controls button:hover { background: #e3e6ea; }
+.win11-window-controls button.is-close:hover { background: #c42b1c; color: #fff; }
+.edge-tabs { min-height: 37px; display: flex; align-items: end; gap: 4px; padding: 5px 8px 0; background: #dfe5eb; }
+.edge-tabs span { min-width: 210px; min-height: 32px; display: flex; align-items: center; padding: 5px 12px; border-radius: 8px 8px 0 0; background: #fff; font-size: .7rem; }
+.edge-tabs button { width: 34px; min-height: 30px; border: 0; border-radius: 5px; background: transparent; font-size: 1rem; }
+.edge-toolbar { min-height: 44px; display: grid; grid-template-columns: 34px 34px 1fr 34px; gap: 4px; align-items: center; padding: 5px 8px; border-bottom: 1px solid #d8dde3; background: #fff; }
+.edge-toolbar button { min-height: 32px; border: 0; border-radius: 6px; background: transparent; color: #303a46; font-size: 1rem; cursor: default; }
+.edge-toolbar button:hover:not(:disabled) { background: #edf1f5; }
+.edge-toolbar button:disabled { color: #a8afb7; }
+.edge-toolbar > div { min-height: 32px; display: flex; align-items: center; gap: 7px; padding: 4px 13px; overflow: hidden; border-radius: 18px; background: #f1f4f7; color: #374151; font-size: .69rem; white-space: nowrap; }
+.edge-page { flex: 1; overflow: auto; padding: clamp(22px,4vw,50px); background: #fff; user-select: text; }
+.edge-results { width: min(100%, 760px); margin: auto; }
+.edge-results > p { color: #5f6368; font-size: .74rem; }
+.edge-results > button { width: 100%; display: grid; gap: 6px; padding: 17px 0; border: 0; background: transparent; text-align: left; cursor: default; }
+.edge-results small { color: #475569; }
+.edge-results strong { color: #1558d6; font-size: 1.15rem; font-weight: 500; }
+.edge-results span { color: #3f4b59; font-size: .82rem; }
+.edge-page article { width: min(100%,760px); margin: auto; }
+.edge-page article > p:first-child { color: #086b4d; font-size: .76rem; font-weight: 700; }
+.edge-page article h3 { margin: 8px 0 18px; font-size: 1.7rem; }
+.notepad-menu { min-height: 35px; display: flex; align-items: center; gap: 20px; padding: 0 13px; border-bottom: 1px solid #e3e7eb; background: #fbfbfc; font-size: .7rem; }
+.win11-window--notepad textarea { flex: 1; width: 100%; padding: 18px; border: 0; outline-offset: -3px; resize: none; background: #fff; color: #171c24; font: 1rem/1.7 "Yu Gothic UI", "Segoe UI", sans-serif; user-select: text; }
+.win11-window--notepad footer { min-height: 25px; padding: 5px 10px; border-top: 1px solid #d9dee4; background: #f8f9fa; color: #475569; font-size: .62rem; text-align: right; }
+.win11-taskbar { position: absolute; z-index: 100; inset: auto 0 0; height: 48px; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 4px 13px; border-top: 1px solid rgba(255,255,255,.72); background: rgba(238,248,255,.91); box-shadow: 0 -4px 18px rgba(17,64,97,.13); backdrop-filter: blur(22px); }
+.win11-taskbar > button { position: relative; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #075da5; font-size: 1.2rem; cursor: default; }
+.win11-taskbar > button:hover,.win11-taskbar > button[aria-pressed="true"] { background: rgba(255,255,255,.82); }
+.win11-taskbar > button.is-open::after { content: ""; position: absolute; bottom: 2px; left: 50%; width: 15px; height: 3px; transform: translateX(-50%); border-radius: 2px; background: #1682c4; }
+.win11-taskbar .edge-app-icon,.win11-taskbar .notepad-app-icon { width: 25px; height: 25px; }
+.win11-tray { position: absolute; right: 12px; display: flex; align-items: center; gap: 10px; color: #1f2937; font-size: .6rem; text-align: right; }
+.win11-tray time { line-height: 1.35; }
+
 @media (max-width: 680px) {
   .curriculum { padding-block: 12px 18px; }
   .curriculum__header h1 { font-size: 2rem; }
@@ -976,6 +1045,11 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
   .lab-success__evidence dl > div { padding: 0 0 6px; border: 0; border-bottom: 1px solid var(--line); }
   .lab-success__actions { grid-template-columns: 1fr; }
   .practice-device-frame { min-height: 500px; padding: 15px 9px 55px; }
+  .practice-device-frame.is-device-desktop { min-height: 560px; padding: 0; }
+  .win11-desktop { height: 560px; }
+  .win11-window.is-normal { min-width: 0; width: calc(100% - 32px); height: 66%; }
+  .win11-window--notepad.is-normal { width: calc(100% - 42px); }
+  .win11-tray { display: none; }
   .practice-app-window { width: 100%; min-height: 400px; }
   .practice-window-controls,.windows-desktop-icons { display: none; }
   .practice-device-frame .practical-lab__body { padding: 9px; }

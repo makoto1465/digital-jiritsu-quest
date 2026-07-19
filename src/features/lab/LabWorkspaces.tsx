@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
 
+import { WindowsDesktopWorkspace } from "@/features/lab/WindowsDesktopWorkspace";
 import type { JourneyEnvironment } from "@/features/progress/ProgressProvider";
 
 export interface WorkspaceProps {
@@ -71,6 +72,7 @@ function CopyPastePractice({ environment, emit }: Pick<WorkspaceProps, "environm
 
   return (
     <div className={`copy-practice copy-practice--${environment}`}>
+      {environment === "windows" ? <div className="copy-desktop-icons" aria-hidden="true"><span>🗑️<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
       <section className="notepad-window" aria-label="見本文が開かれたメモ帳">
         <header><span className="notepad-icon" aria-hidden="true">▤</span><strong>夏祭りのご案内.txt - メモ帳</strong><span className="window-controls" aria-hidden="true">—　□　×</span></header>
         <nav aria-label="メモ帳のメニュー"><span>ファイル</span><span>編集</span><span>表示</span></nav>
@@ -99,6 +101,7 @@ function CopyPastePractice({ environment, emit }: Pick<WorkspaceProps, "environm
         {menu === "note" ? <div className="native-context-menu native-context-menu--target"><button disabled={!copied} type="button" onClick={() => { setNote(copiedText); setMenu(null); emit("text-pasted", "コピーした文章をメモへ貼り付けました。"); }}>貼り付け</button></div> : null}
       </section>
       <p className="copy-practice__status" aria-live="polite">{!selectedCorrectly ? "① 見本文の『集合場所：中央公民館』だけをドラッグして選択します" : !copied ? `② 選択した文字の上で${environmentCopy[environment].context}します` : note !== copiedText ? `③ 右のメモ欄を${environmentCopy[environment].context}します` : "コピーと貼り付けができました"}</p>
+      {environment === "windows" ? <div className="win11-taskbar copy-taskbar" aria-hidden="true"><span className="windows-start">⊞</span><span>⌕</span><span className="notepad-app-icon">▤</span><span className="notepad-app-icon">▤</span><div className="win11-tray"><span>⌃　Wi-Fi　▰</span><time>11:24<br />2026/07/19</time></div></div> : null}
     </div>
   );
 }
@@ -152,7 +155,11 @@ export function MovementWorkspace({ environment, emit, missionId }: WorkspacePro
   );
 }
 
-export function ScreensWorkspace({ environment, emit }: WorkspaceProps) {
+export function ScreensWorkspace(props: WorkspaceProps) {
+  return props.environment === "windows" ? <WindowsDesktopWorkspace {...props} /> : <LegacyScreensWorkspace {...props} />;
+}
+
+function LegacyScreensWorkspace({ environment, emit }: WorkspaceProps) {
   type ScreenApp = "browser" | "notes" | "camera" | "phone";
   type Screen = ScreenApp | "home";
   const appLabel: Record<ScreenApp, string> = {
@@ -256,13 +263,17 @@ export function ScreensWorkspace({ environment, emit }: WorkspaceProps) {
   );
 }
 
-export function TextWorkspace({ emit }: WorkspaceProps) {
+export function TextWorkspace({ emit, missionId }: WorkspaceProps) {
   const source = "集合場所：中央公民館　持ち物：青いタオル　開始：午前10時";
   const [typing, setTyping] = useState("");
   const [note, setNote] = useState("");
   const [previousNote, setPreviousNote] = useState("");
   const [redoNote, setRedoNote] = useState<string | null>(null);
   const editedRef = useRef(false);
+  const showAll = missionId === "free-play";
+  const showSource = showAll || missionId === "text-selection" || missionId === "copy-paste";
+  const showTyping = showAll || missionId === "typing";
+  const showEditor = showAll || missionId === "copy-paste" || missionId === "edit-undo";
 
   const inspectSelection = (target: HTMLTextAreaElement) => {
     const selected = target.value.slice(target.selectionStart, target.selectionEnd);
@@ -275,16 +286,16 @@ export function TextWorkspace({ emit }: WorkspaceProps) {
   };
 
   return (
-    <div className="text-workbench">
-      <section className="lab-panel">
-        <div className="lab-panel__bar"><span /><h3>案内から必要な文字を使う</h3></div>
-        <label className="field-label" htmlFor="source-text">案内文</label>
-        <textarea id="source-text" className="selection-source" readOnly value={source} onCopy={handleCopy} onSelect={(event) => inspectSelection(event.currentTarget)} />
-        <p className="field-help">マウスならドラッグ、スマートフォンなら長押し後の選択範囲を使います。</p>
-        <label className="field-label" htmlFor="target-typing">予定の検索</label>
-        <input id="target-typing" value={typing} onChange={(event) => { setTyping(event.target.value); if (event.target.value.trim() === "夏祭り 10時") emit("target-typed", "必要な文字を正しく入力しました。"); }} placeholder="ここへ入力" />
-      </section>
-      <section className="lab-panel note-editor">
+    <div className={`text-workbench${showSource && showEditor ? "" : " is-single"}`}>
+      {showSource || showTyping ? <section className="lab-panel">
+        <div className="lab-panel__bar"><span /><h3>{missionId === "typing" ? "予定を検索する" : "案内から必要な文字を使う"}</h3></div>
+        {showSource ? <><label className="field-label" htmlFor="source-text">案内文</label>
+          <textarea id="source-text" className="selection-source" readOnly value={source} onCopy={handleCopy} onSelect={(event) => inspectSelection(event.currentTarget)} />
+          <p className="field-help">マウスならドラッグ、スマートフォンなら長押し後の選択範囲を使います。</p></> : null}
+        {showTyping ? <><label className="field-label" htmlFor="target-typing">予定の検索</label>
+          <input id="target-typing" value={typing} onChange={(event) => { setTyping(event.target.value); if (event.target.value.trim() === "夏祭り 10時") emit("target-typed", "必要な文字を正しく入力しました。"); }} placeholder="ここへ入力" /></> : null}
+      </section> : null}
+      {showEditor ? <section className="lab-panel note-editor">
         <div className="lab-panel__bar"><span /><h3>自分のメモ</h3><small>画面上のボタンで操作します</small></div>
         <textarea
           aria-label="貼り付け先のメモ"
@@ -307,7 +318,7 @@ export function TextWorkspace({ emit }: WorkspaceProps) {
           <button disabled={!note} type="button" onClick={() => { setRedoNote(note); setNote(previousNote); emit("text-undone", "画面上の『取り消し』で直前の編集を戻しました。"); }}>↶ 取り消し</button>
           <button disabled={redoNote === null} type="button" onClick={() => { if (redoNote === null) return; setNote(redoNote); setRedoNote(null); }}>↷ やり直し</button>
         </div>
-      </section>
+      </section> : null}
     </div>
   );
 }
@@ -377,7 +388,7 @@ export function WebWorkspace({ emit }: WorkspaceProps) {
   );
 }
 
-export function FilesWorkspace({ environment, emit }: WorkspaceProps) {
+export function FilesWorkspace({ environment, emit, missionId }: WorkspaceProps) {
   const [folder, setFolder] = useState<"downloads" | "materials">("downloads");
   const [fileName, setFileName] = useState("document1.pdf");
   const [renaming, setRenaming] = useState(false);
@@ -388,6 +399,9 @@ export function FilesWorkspace({ environment, emit }: WorkspaceProps) {
   const [reviewed, setReviewed] = useState(false);
   const pickerTriggerRef = useRef<HTMLButtonElement>(null);
   const pickerOpenedRef = useRef(false);
+  const showAll = missionId === "free-play";
+  const showFileBrowser = showAll || missionId !== "attach-review";
+  const showMailComposer = showAll || missionId === "attach-review";
 
   useEffect(() => {
     if (pickerOpen) {
@@ -402,8 +416,8 @@ export function FilesWorkspace({ environment, emit }: WorkspaceProps) {
 
   const moveFile = () => { setFolder("materials"); emit("file-moved", "ファイルを『参加資料』へ移しました。"); };
   return (
-    <div className="files-workbench">
-      <section className="file-browser">
+    <div className={`files-workbench${showFileBrowser && showMailComposer ? "" : " is-single"}`}>
+      {showFileBrowser ? <section className="file-browser">
         <header><strong>{environmentCopy[environment].files}</strong><button type="button" onClick={() => emit("location-checked", `現在地が${folder === "downloads" ? "ダウンロード" : "参加資料"}だと確認しました。`)}>場所を確認</button></header>
         <nav aria-label="保存場所"><button aria-current={folder === "downloads" ? "page" : undefined} type="button" onClick={() => { setFolder("downloads"); emit("downloads-opened", "ダウンロードを開きました。"); }}>↓ ダウンロード</button><button aria-current={folder === "materials" ? "page" : undefined} type="button" onClick={() => setFolder("materials")}>📁 参加資料</button></nav>
         <div className="file-list" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); if (event.dataTransfer.getData("text/plain") === "current-file" && folder === "materials") moveFile(); }}>
@@ -421,9 +435,9 @@ export function FilesWorkspace({ environment, emit }: WorkspaceProps) {
           </div> : null}
           {folder === "materials" ? <button className="file-row" type="button" onClick={() => { setFileName("2026夏祭り案内.pdf"); emit("independent-organized", "申込書を後から分かる名前と場所へ整理しました。"); }}>📄 申込書_記入済.pdf <small>新しい版</small></button> : null}
         </div>
-        <button className="download-practice" type="button" disabled={downloaded} onClick={() => { setDownloaded(true); emit("download-started", "案内PDFを一度ダウンロードしました。"); emit("independent-saved", "受け取った資料を端末へ保存しました。"); }}>{downloaded ? "保存が完了しました" : "参加案内.pdf をダウンロード"}</button>
-      </section>
-      <section className="mail-composer">
+        {showAll || missionId === "download-locate" ? <button className="download-practice" type="button" disabled={downloaded} onClick={() => { setDownloaded(true); emit("download-started", "案内PDFを一度ダウンロードしました。"); emit("independent-saved", "受け取った資料を端末へ保存しました。"); }}>{downloaded ? "保存が完了しました" : "参加案内.pdf をダウンロード"}</button> : null}
+      </section> : null}
+      {showMailComposer ? <section className="mail-composer">
         <header><strong>返信メール</strong><span>送信は練習内だけ</span></header>
         <label>宛先<input defaultValue="staff@midori.example" readOnly /></label>
         <label>件名<input defaultValue="夏祭り資料" /></label>
@@ -434,12 +448,12 @@ export function FilesWorkspace({ environment, emit }: WorkspaceProps) {
         </div>
         <button className="review-button" type="button" onClick={() => { setReviewed(true); emit("recipient-reviewed", "宛先、件名、添付ファイル名を見直しました。"); if (attachment === "2026夏祭り案内.pdf") emit("independent-attached", "正しい宛先と版を確認しました。"); }}>送信前の3項目を確認</button>
         <button className="practice-send" disabled={!attachment || !reviewed} type="button" onClick={() => { if (attachment === "2024夏祭り案内.pdf") emit("wrong-file-sent", "古い版を送ろうとしました。練習をやり直し、新しい版を選びましょう。"); else emit("safe-send-ready", "新版・宛先・件名を確認しました。練習なので外部送信はしません。"); }}>送信を確定する（外部には送信されません）</button>
-      </section>
+      </section> : null}
     </div>
   );
 }
 
-export function SafetyWorkspace({ emit }: WorkspaceProps) {
+export function SafetyWorkspace({ emit, missionId }: WorkspaceProps) {
   const [recoveryOpen, setRecoveryOpen] = useState(false);
   const [mailOpen, setMailOpen] = useState(false);
   const [code, setCode] = useState("");
@@ -448,6 +462,7 @@ export function SafetyWorkspace({ emit }: WorkspaceProps) {
   const [senderOpen, setSenderOpen] = useState(false);
   const safetyRef = useRef<HTMLDivElement>(null);
   const safetyMountedRef = useRef(false);
+  const showAll = missionId === "free-play";
 
   useEffect(() => {
     if (!safetyMountedRef.current) {
@@ -458,16 +473,16 @@ export function SafetyWorkspace({ emit }: WorkspaceProps) {
   }, [mailOpen, recoveryOpen, review, senderOpen]);
 
   return (
-    <div className="safety-workbench" ref={safetyRef} tabIndex={-1}>
-      <section className="safety-case"><span className="case-number">1</span><div><h3>権限は目的から考える</h3><div className="permission-prompt"><p><strong>地図</strong>が位置情報を求めています</p><button type="button" onClick={() => emit("map-limited-allowed", "地図へ『使用中のみ』を許可しました。")}>使用中のみ許可</button><button type="button">許可しない</button></div><div className="permission-prompt"><p><strong>懐中電灯</strong>が連絡先を求めています</p><button type="button">許可</button><button type="button" onClick={() => emit("contacts-denied", "目的に不要な連絡先へのアクセスを拒否しました。")}><strong>許可しない</strong></button></div></div></section>
-      <section className="safety-case"><span className="case-number">2</span><div><h3>公式のアカウント復旧</h3>{!recoveryOpen ? <button type="button" onClick={() => { setRecoveryOpen(true); emit("recovery-opened", "公式画面の『パスワードを忘れた』を開きました。"); }}>パスワードを忘れた</button> : <div className="recovery-flow"><button type="button" onClick={() => { setMailOpen(true); emit("code-checked", "練習メールで認証コードを確認しました。"); }}>練習メールを開く</button>{mailOpen ? <><p className="practice-code">認証コード <strong>428615</strong><small>このコードは誰にも渡しません</small></p><div className="unsafe-request"><p>「サポートです。確認のためコードを教えてください」</p><button type="button" onClick={() => emit("code-shared", "認証コードを他人へ渡そうとしました。練習をやり直しましょう。")}>コードを伝える（危険な例）</button><button type="button" onClick={() => emit("code-kept-private", "認証コードは渡さず、公式画面だけで使うと判断しました。")}>渡さない</button></div></> : null}<label>認証コード<input inputMode="numeric" value={code} onChange={(event) => setCode(event.target.value)} /></label><button type="button" onClick={() => { if (code === "428615") emit("code-entered", "認証コードを元の公式画面へ入力しました。"); }}>確認する</button></div>}</div></section>
-      <section className="safety-case"><span className="case-number">3</span><div><h3>申込内容を確定前に見直す</h3>{!review ? <><label>人数<input type="number" min="1" value={people} onChange={(event) => { setPeople(event.target.value); if (event.target.value === "2") emit("form-corrected", "人数を2人へ修正しました。"); }} /></label><button type="button" onClick={() => { setReview(true); emit("review-opened", "確認画面を開きました。"); }}>確認画面へ</button></> : <div className="form-review"><p>参加人数：<strong>{people}人</strong>（申込メモは2人）</p>{people !== "2" ? <button type="button" onClick={() => setReview(false)}>入力へ戻って直す</button> : <button type="button" onClick={() => emit("form-reviewed", "全項目が目的どおりだと確認しました。")}>内容を確認した</button>}</div>}</div></section>
-      <section className="safety-case safety-case--warning"><span className="case-number">4</span><div><h3>「本日中に停止」に反応する前に</h3><p className="suspicious-message">【緊急】アカウントを本日中に確認してください</p><div className="safe-actions"><button type="button" onClick={() => { setSenderOpen(true); emit("sender-inspected", "送信元が公式ドメインと違うことを確認しました。"); }}>送信元を見る</button><button type="button" onClick={() => emit("official-route-used", "メッセージのリンクではなく公式アプリから確認しました。")} >公式アプリを開く</button><button type="button" onClick={() => emit("message-reported", "怪しいメッセージとして報告しました。")} >迷惑メッセージとして報告</button></div>{senderOpen ? <p className="sender-detail">送信元：notice@mid0ri-support.example（文字の一部が数字です）</p> : null}<button className="danger-link" type="button" onClick={() => emit("suspicious-link-opened", "怪しいリンクを開いてしまいました。戻って別経路を使いましょう。")}>メッセージ内のリンク（練習）</button></div></section>
+    <div className={`safety-workbench${showAll ? "" : " is-single"}`} ref={safetyRef} tabIndex={-1}>
+      {showAll || missionId === "permission-decision" ? <section className="safety-case"><span className="case-number">1</span><div><h3>権限は目的から考える</h3><div className="permission-prompt"><p><strong>地図</strong>が位置情報を求めています</p><button type="button" onClick={() => emit("map-limited-allowed", "地図へ『使用中のみ』を許可しました。")}>使用中のみ許可</button><button type="button">許可しない</button></div><div className="permission-prompt"><p><strong>懐中電灯</strong>が連絡先を求めています</p><button type="button">許可</button><button type="button" onClick={() => emit("contacts-denied", "目的に不要な連絡先へのアクセスを拒否しました。")}><strong>許可しない</strong></button></div></div></section> : null}
+      {showAll || missionId === "account-recovery" ? <section className="safety-case"><span className="case-number">2</span><div><h3>公式のアカウント復旧</h3>{!recoveryOpen ? <button type="button" onClick={() => { setRecoveryOpen(true); emit("recovery-opened", "公式画面の『パスワードを忘れた』を開きました。"); }}>パスワードを忘れた</button> : <div className="recovery-flow"><button type="button" onClick={() => { setMailOpen(true); emit("code-checked", "練習メールで認証コードを確認しました。"); }}>練習メールを開く</button>{mailOpen ? <><p className="practice-code">認証コード <strong>428615</strong><small>このコードは誰にも渡しません</small></p><div className="unsafe-request"><p>「サポートです。確認のためコードを教えてください」</p><button type="button" onClick={() => emit("code-shared", "認証コードを他人へ渡そうとしました。練習をやり直しましょう。")}>コードを伝える（危険な例）</button><button type="button" onClick={() => emit("code-kept-private", "認証コードは渡さず、公式画面だけで使うと判断しました。")}>渡さない</button></div></> : null}<label>認証コード<input inputMode="numeric" value={code} onChange={(event) => setCode(event.target.value)} /></label><button type="button" onClick={() => { if (code === "428615") emit("code-entered", "認証コードを元の公式画面へ入力しました。"); }}>確認する</button></div>}</div></section> : null}
+      {showAll || missionId === "form-review" ? <section className="safety-case"><span className="case-number">3</span><div><h3>申込内容を確定前に見直す</h3>{!review ? <><label>人数<input type="number" min="1" value={people} onChange={(event) => { setPeople(event.target.value); if (event.target.value === "2") emit("form-corrected", "人数を2人へ修正しました。"); }} /></label><button type="button" onClick={() => { setReview(true); emit("review-opened", "確認画面を開きました。"); }}>確認画面へ</button></> : <div className="form-review"><p>参加人数：<strong>{people}人</strong>（申込メモは2人）</p>{people !== "2" ? <button type="button" onClick={() => setReview(false)}>入力へ戻って直す</button> : <button type="button" onClick={() => emit("form-reviewed", "全項目が目的どおりだと確認しました。")}>内容を確認した</button>}</div>}</div></section> : null}
+      {showAll || missionId === "suspicious-message" ? <section className="safety-case safety-case--warning"><span className="case-number">4</span><div><h3>「本日中に停止」に反応する前に</h3><p className="suspicious-message">【緊急】アカウントを本日中に確認してください</p><div className="safe-actions"><button type="button" onClick={() => { setSenderOpen(true); emit("sender-inspected", "送信元が公式ドメインと違うことを確認しました。"); }}>送信元を見る</button><button type="button" onClick={() => emit("official-route-used", "メッセージのリンクではなく公式アプリから確認しました。")} >公式アプリを開く</button><button type="button" onClick={() => emit("message-reported", "怪しいメッセージとして報告しました。")} >迷惑メッセージとして報告</button></div>{senderOpen ? <p className="sender-detail">送信元：notice@mid0ri-support.example（文字の一部が数字です）</p> : null}<button className="danger-link" type="button" onClick={() => emit("suspicious-link-opened", "怪しいリンクを開いてしまいました。戻って別経路を使いましょう。")}>メッセージ内のリンク（練習）</button></div></section> : null}
     </div>
   );
 }
 
-export function RecoveryWorkspace({ environment, emit }: WorkspaceProps) {
+export function RecoveryWorkspace({ environment, emit, missionId }: WorkspaceProps) {
   const [errorOpen, setErrorOpen] = useState(false);
   const [storageFixed, setStorageFixed] = useState(false);
   const [network, setNetwork] = useState("guest");
@@ -475,12 +490,13 @@ export function RecoveryWorkspace({ environment, emit }: WorkspaceProps) {
   const [helpQuery, setHelpQuery] = useState("");
   const [helpOpen, setHelpOpen] = useState(false);
   const [zoom, setZoom] = useState("175");
+  const showAll = missionId === "free-play";
   return (
-    <div className="recovery-workbench">
-      <section className="recovery-card"><header><span>保存できませんでした</span><button type="button" onClick={() => { setErrorOpen(true); emit("error-inspected", "エラーの詳細を開きました。"); }}>詳細を見る</button></header>{errorOpen ? <div><p><strong>空き容量が不足しています。</strong><br />このファイルには20MB必要です。</p><button type="button" onClick={() => { setStorageFixed(true); emit("storage-fixed", "練習用の不要ファイルをゴミ箱へ移し、容量を空けました。"); }}>不要な練習ファイルを整理</button><button disabled={!storageFixed} type="button" onClick={() => emit("retry-succeeded", "原因を直したあと、保存に成功しました。")} >保存を再試行</button></div> : null}</section>
-      <section className="recovery-card"><header><span>Wi-Fi：接続済み・通信なし</span><button type="button" onClick={() => { setInspectedNetwork(true); emit("network-inspected", "接続中のネットワークと機内モードを確認しました。"); }}>状態を見る</button></header>{inspectedNetwork ? <div className="network-list" role="radiogroup" aria-label="Wi-Fiネットワーク"><label><input type="radio" checked={network === "guest"} onChange={() => setNetwork("guest")} /> guest-free（通信なし）</label><label><input type="radio" checked={network === "town"} onChange={() => { setNetwork("town"); emit("correct-network", "『まちのWi-Fi』へつなぎ直しました。"); }} /> まちのWi-Fi（安全な練習用）</label><button disabled={network !== "town"} type="button" onClick={() => emit("connection-verified", "公式ページと天気ページの両方を表示できました。")} >二つのページで確認</button></div> : null}</section>
-      <section className="recovery-card"><header><span>公式ヘルプを探す</span></header><form onSubmit={(event) => { event.preventDefault(); if (helpQuery.includes("文字") && (helpQuery.toLowerCase().includes(environment) || helpQuery.includes(environment === "windows" ? "Windows" : environment === "mac" ? "Mac" : environment === "iphone" ? "iPhone" : "Android"))) { setHelpOpen(true); emit("help-query", "環境名と症状を含めて検索しました。"); } }}><input aria-label="ヘルプ検索" value={helpQuery} onChange={(event) => setHelpQuery(event.target.value)} placeholder={`${environment === "iphone" ? "iPhone" : environment} 文字が大きい`} /><button type="submit">ヘルプ検索</button></form>{helpOpen ? <div className="help-result"><button type="button" onClick={() => { emit("trusted-help", "公式ヘルプの該当項目を開きました。"); setZoom("100"); emit("display-restored", "表示倍率を100%へ戻しました。"); }}>公式ヘルプ：表示倍率を元へ戻す</button><label>現在の表示倍率 <output>{zoom}%</output></label></div> : null}</section>
-      <section className="recovery-card"><header><span>コピーの右クリックが使えません</span></header><p>右クリック以外にも、画面上の編集メニューからコピーできます。</p><button type="button" onClick={() => emit("primary-blocked", "右クリックが使えないことを確認しました。")} >右クリックを試す</button><div className="alternate-actions"><button type="button" onClick={() => emit("alternate-used", "上部の編集メニューからコピーしました。")} >編集メニュー → コピー</button></div></section>
+    <div className={`recovery-workbench${showAll ? "" : " is-single"}`}>
+      {showAll || missionId === "error-reading" ? <section className="recovery-card"><header><span>保存できませんでした</span><button type="button" onClick={() => { setErrorOpen(true); emit("error-inspected", "エラーの詳細を開きました。"); }}>詳細を見る</button></header>{errorOpen ? <div><p><strong>空き容量が不足しています。</strong><br />このファイルには20MB必要です。</p><button type="button" onClick={() => { setStorageFixed(true); emit("storage-fixed", "練習用の不要ファイルをゴミ箱へ移し、容量を空けました。"); }}>不要な練習ファイルを整理</button><button disabled={!storageFixed} type="button" onClick={() => emit("retry-succeeded", "原因を直したあと、保存に成功しました。")} >保存を再試行</button></div> : null}</section> : null}
+      {showAll || missionId === "wifi-recovery" ? <section className="recovery-card"><header><span>Wi-Fi：接続済み・通信なし</span><button type="button" onClick={() => { setInspectedNetwork(true); emit("network-inspected", "接続中のネットワークと機内モードを確認しました。"); }}>状態を見る</button></header>{inspectedNetwork ? <div className="network-list" role="radiogroup" aria-label="Wi-Fiネットワーク"><label><input type="radio" checked={network === "guest"} onChange={() => setNetwork("guest")} /> guest-free（通信なし）</label><label><input type="radio" checked={network === "town"} onChange={() => { setNetwork("town"); emit("correct-network", "『まちのWi-Fi』へつなぎ直しました。"); }} /> まちのWi-Fi（安全な練習用）</label><button disabled={network !== "town"} type="button" onClick={() => emit("connection-verified", "公式ページと天気ページの両方を表示できました。")} >二つのページで確認</button></div> : null}</section> : null}
+      {showAll || missionId === "help-search" ? <section className="recovery-card"><header><span>公式ヘルプを探す</span></header><form onSubmit={(event) => { event.preventDefault(); if (helpQuery.includes("文字") && (helpQuery.toLowerCase().includes(environment) || helpQuery.includes(environment === "windows" ? "Windows" : environment === "mac" ? "Mac" : environment === "iphone" ? "iPhone" : "Android"))) { setHelpOpen(true); emit("help-query", "環境名と症状を含めて検索しました。"); } }}><input aria-label="ヘルプ検索" value={helpQuery} onChange={(event) => setHelpQuery(event.target.value)} placeholder={`${environment === "iphone" ? "iPhone" : environment} 文字が大きい`} /><button type="submit">ヘルプ検索</button></form>{helpOpen ? <div className="help-result"><button type="button" onClick={() => { emit("trusted-help", "公式ヘルプの該当項目を開きました。"); setZoom("100"); emit("display-restored", "表示倍率を100%へ戻しました。"); }}>公式ヘルプ：表示倍率を元へ戻す</button><label>現在の表示倍率 <output>{zoom}%</output></label></div> : null}</section> : null}
+      {showAll || missionId === "alternate-solution" ? <section className="recovery-card"><header><span>コピーの右クリックが使えません</span></header><p>右クリック以外にも、画面上の編集メニューからコピーできます。</p><button type="button" onClick={() => emit("primary-blocked", "右クリックが使えないことを確認しました。")} >右クリックを試す</button><div className="alternate-actions"><button type="button" onClick={() => emit("alternate-used", "上部の編集メニューからコピーしました。")} >編集メニュー → コピー</button></div></section> : null}
     </div>
   );
 }
