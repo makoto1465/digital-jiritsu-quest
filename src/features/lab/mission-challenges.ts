@@ -34,8 +34,8 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "現在地を失わず、戻るボタンで前の画面へ戻れました。",
     [["page-opened"], ["went-back"]],
     undefined,
-    { windows: "画面下の『Microsoft Edge』を左クリックして開き、『中央公民館｜施設案内』を左クリックします。次に、左上の『戻る』を左クリックしてください。" },
-    { windows: [["browser-opened"], ["page-opened"], ["went-back"]] },
+    { windows: "画面左上の『🌐 インターネットブラウザ』アイコンを、マウスの左ボタンで素早く2回押します（ダブルクリック）。青い文字の『中央公民館｜施設案内』を1回左クリックし、最後に画面左上の『←（戻る）』ボタンを1回左クリックしてください。" },
+    { windows: [["browser-opened-from-desktop"], ["page-opened"], ["went-back"]] },
   ),
   "open-close": challenge(
     "screens",
@@ -43,7 +43,7 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "画面を一時的に隠す操作と、閉じる操作を区別できました。",
     [["notes-opened"], ["window-closed"], ["app-reopened"]],
     undefined,
-    { windows: "画面下の『メモ帳』を左クリックして開き、右上の『最小化』を左クリックします。画面下の『メモ帳』で戻した後、『閉じる』を左クリックし、画面下の『メモ帳』からもう一度開いてください。" },
+    { windows: "画面下の青い帯（タスクバー）にある『▤ メモ帳』アイコンを1回左クリックして開きます。メモ帳の右上にある『―（最小化）』ボタンを1回左クリックします。タスクバーの『▤ メモ帳』を1回左クリックして戻した後、右上の『×（閉じる）』ボタンを1回左クリックします。最後にタスクバーの『▤ メモ帳』を1回左クリックして、もう一度開いてください。" },
     { windows: [["notes-opened"], ["window-minimized"], ["window-restored"], ["window-closed"], ["app-reopened"]] },
   ),
   "app-switch": challenge(
@@ -52,7 +52,7 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "二つの作業を閉じずに行き来できました。",
     [["two-apps-open"], ["app-switched"]],
     undefined,
-    { windows: "画面下の『Microsoft Edge』と『メモ帳』を左クリックして両方開きます。次に画面下のボタンで『Microsoft Edge』へ切り替え、もう一度『メモ帳』へ切り替えてください。" },
+    { windows: "画面下の青い帯（タスクバー）にある『🌐 インターネットブラウザ』と『▤ メモ帳』のアイコンを、それぞれ1回左クリックして開きます。次にタスクバーの『🌐 インターネットブラウザ』を1回左クリックし、その後『▤ メモ帳』を1回左クリックして切り替えてください。" },
     { windows: [["two-apps-open"], ["app-switched"], ["app-switched-twice"]] },
   ),
   "menu-discovery": challenge(
@@ -61,7 +61,7 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     "ウィンドウを元の大きさへ戻し、場所と大きさを変えられました。",
     [["menu-opened"], ["display-opened"]],
     undefined,
-    { windows: "画面下の『Microsoft Edge』を左クリックして開きます。右上の『元のサイズに戻す』を左クリックし、タイトルバーを左へドラッグしてください。最後に『最大化』を左クリックしてください。" },
+    { windows: "画面下の青い帯（タスクバー）にある『🌐 インターネットブラウザ』アイコンを1回左クリックして開きます。右上の『❐（元のサイズに戻す）』ボタンを1回左クリックします。次に、ウィンドウ上部のアプリ名が書かれた白い帯（タイトルバー）を左へドラッグします。最後に右上の『□（最大化）』ボタンを1回左クリックしてください。" },
     { windows: [["browser-opened"], ["window-restored-down"], ["window-moved"], ["window-maximized"]] },
   ),
 

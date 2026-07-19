@@ -4,7 +4,7 @@ import { Fragment, useId, useState } from "react";
 import { useProgress } from "@/features/progress/ProgressProvider";
 
 const glossary = {
-  doubleClick: { label: "ダブルクリック", definition: "マウスの左ボタンを、すばやく2回押す操作です。" },
+  doubleClick: { label: "ダブルクリック", definition: "マウスの左ボタンを素早く2回押す操作です。デスクトップのアイコンを開くときなどに使います。" },
   rightClick: { label: "右クリック", definition: "マウスの右ボタンを1回押し、その場所で使えるメニューを開く操作です。" },
   leftClick: { label: "左クリック", definition: "マウスの左ボタンを1回押して、すぐ離す操作です。" },
   click: { label: "クリック", definition: "マウスの左ボタンを1回押して、すぐ離す操作です。" },
@@ -17,6 +17,12 @@ const glossary = {
   folder: { label: "フォルダー", definition: "ファイルをまとめて入れておく場所です。" },
   app: { label: "アプリ", definition: "電話、カメラ、メールなど、目的ごとに使うソフトです。" },
   browser: { label: "ブラウザ", definition: "インターネットのページを見るためのアプリです。" },
+  taskbar: { label: "タスクバー", definition: "Windows画面の下にある帯です。スタートや、開いているアプリのアイコンがあります。" },
+  minimize: { label: "最小化", definition: "ウィンドウを閉じずに画面から隠す操作です。右上の『―』ボタンで、タスクバーへしまいます。" },
+  restoreDown: { label: "元のサイズに戻す", definition: "画面いっぱいのウィンドウを、動かせる大きさへ戻す操作です。右上の『❐』ボタンを使います。" },
+  maximize: { label: "最大化", definition: "ウィンドウを画面いっぱいに広げる操作です。右上の『□』ボタンを使います。" },
+  titleBar: { label: "タイトルバー", definition: "ウィンドウの一番上にある、アプリ名が書かれた帯です。ここをドラッグするとウィンドウを移動できます。" },
+  close: { label: "閉じる", definition: "開いているウィンドウを終了する操作です。右上の『×』ボタンを使います。" },
   tab: { label: "タブ", definition: "ブラウザで複数のページを切り替えるための見出しです。" },
   download: { label: "ダウンロード", definition: "インターネット上のファイルを、自分の機器へ保存することです。" },
   attachment: { label: "添付", definition: "メールなどにファイルを付けることです。" },

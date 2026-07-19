@@ -978,7 +978,7 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .win11-wallpaper::after { content: ""; position: absolute; width: 310px; height: 310px; right: 15%; top: 9%; border: 24px solid rgba(158,232,255,.24); border-radius: 18% 55% 20% 48%; transform: rotate(-12deg); filter: blur(2px); }
 .win11-desktop-icons { position: absolute; z-index: 1; top: 18px; left: 14px; display: grid; gap: 13px; }
 .win11-desktop-icons button { width: 72px; min-height: 74px; display: grid; place-items: center; gap: 2px; padding: 5px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #fff; font: 600 .67rem/1.2 "Segoe UI", "Yu Gothic UI", sans-serif; text-shadow: 0 1px 3px #153d5a; cursor: default; }
-.win11-desktop-icons button:hover { border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.16); }
+.win11-desktop-icons button:hover,.win11-desktop-icons button[aria-pressed="true"] { border-color: rgba(255,255,255,.58); background: rgba(255,255,255,.22); }
 .win11-desktop-icons button span { font-size: 1.7rem; }
 .win11-window { position: absolute; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(56,66,78,.36); border-radius: 9px; background: #fff; box-shadow: 0 18px 48px rgba(6,35,58,.34); transition: box-shadow .15s ease; }
 .win11-window.is-active { box-shadow: 0 22px 58px rgba(3,28,48,.48); }
@@ -987,7 +987,8 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .win11-window--notepad.is-normal { width: min(60%, 710px); height: 58%; }
 .win11-titlebar { min-height: 42px; display: flex; align-items: center; gap: 9px; padding-left: 11px; border-bottom: 1px solid #dce2e8; background: #f7f8fa; touch-action: none; cursor: move; }
 .win11-titlebar strong { overflow: hidden; font-size: .76rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.edge-app-icon,.notepad-app-icon { width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 5px; background: linear-gradient(135deg,#0ea5e9,#0870c9 55%,#0ea572); color: white; font-size: .8rem; font-weight: 900; }
+.edge-app-icon,.notepad-app-icon,.browser-globe-icon { width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 5px; background: linear-gradient(135deg,#0ea5e9,#0870c9 55%,#0ea572); color: white; font-size: .8rem; font-weight: 900; }
+.browser-globe-icon { background: #fff; color: #075da5; font-size: 1.12rem; line-height: 1; }
 .notepad-app-icon { background: #1976d2; }
 .win11-window-controls { height: 42px; margin-left: auto; display: flex; align-self: stretch; }
 .win11-window-controls button { width: 48px; min-height: 42px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #1f2937; font: 500 .9rem "Segoe UI", sans-serif; cursor: default; }
@@ -1018,7 +1019,7 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .win11-taskbar > button { position: relative; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #075da5; font-size: 1.2rem; cursor: default; }
 .win11-taskbar > button:hover,.win11-taskbar > button[aria-pressed="true"] { background: rgba(255,255,255,.82); }
 .win11-taskbar > button.is-open::after { content: ""; position: absolute; bottom: 2px; left: 50%; width: 15px; height: 3px; transform: translateX(-50%); border-radius: 2px; background: #1682c4; }
-.win11-taskbar .edge-app-icon,.win11-taskbar .notepad-app-icon { width: 25px; height: 25px; }
+.win11-taskbar .edge-app-icon,.win11-taskbar .notepad-app-icon,.win11-taskbar .browser-globe-icon { width: 25px; height: 25px; }
 .win11-tray { position: absolute; right: 12px; display: flex; align-items: center; gap: 10px; color: #1f2937; font-size: .6rem; text-align: right; }
 .win11-tray time { line-height: 1.35; }
 

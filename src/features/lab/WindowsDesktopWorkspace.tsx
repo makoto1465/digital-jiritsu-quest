@@ -24,7 +24,7 @@ interface DragState {
 }
 
 const appNames: Record<AppId, string> = {
-  edge: "Microsoft Edge",
+  edge: "インターネットブラウザ",
   notepad: "メモ帳",
 };
 
@@ -36,6 +36,7 @@ export function WindowsDesktopWorkspace({ missionId, emit }: WorkspaceProps) {
   const [activeApp, setActiveApp] = useState<AppId | null>(null);
   const [browserPage, setBrowserPage] = useState<"results" | "facility">("results");
   const [note, setNote] = useState("中央公民館へ確認する");
+  const [selectedDesktopIcon, setSelectedDesktopIcon] = useState<AppId | null>(null);
   const notesOpenedRef = useRef(false);
   const switchCountRef = useRef(0);
   const zIndexRef = useRef(3);
@@ -56,21 +57,29 @@ export function WindowsDesktopWorkspace({ missionId, emit }: WorkspaceProps) {
     setActiveApp(app);
   };
 
-  const openApp = (app: AppId) => {
+  const openApp = (app: AppId, source: "desktop" | "taskbar" = "taskbar") => {
     const wasClosed = windows[app].mode === "closed";
     const otherApp: AppId = app === "edge" ? "notepad" : "edge";
     const willHaveTwoAppsOpen = windows[otherApp].mode !== "closed";
     const nextMode: WindowMode = app === "edge" ? "maximized" : "normal";
     zIndexRef.current += 1;
     setWindows((current) => ({ ...current, [app]: { ...current[app], mode: nextMode, z: zIndexRef.current } }));
-    if (willHaveTwoAppsOpen) emit("two-apps-open", "Microsoft Edgeとメモ帳が両方開いています。");
+    if (willHaveTwoAppsOpen) emit("two-apps-open", "インターネットブラウザとメモ帳が両方開いています。");
     setActiveApp(app);
 
-    if (app === "edge") emit("browser-opened", "タスクバーからMicrosoft Edgeを開きました。");
+    if (app === "edge") {
+      emit("browser-opened", `${source === "desktop" ? "デスクトップ" : "タスクバー"}からインターネットブラウザを開きました。`);
+      if (source === "desktop") emit("browser-opened-from-desktop", "デスクトップのアイコンをダブルクリックして、インターネットブラウザを開きました。");
+    }
     if (app === "notepad" && wasClosed) {
-      emit(notesOpenedRef.current ? "app-reopened" : "notes-opened", notesOpenedRef.current ? "メモ帳をもう一度開きました。" : "タスクバーからメモ帳を開きました。");
+      emit(notesOpenedRef.current ? "app-reopened" : "notes-opened", notesOpenedRef.current ? "メモ帳をもう一度開きました。" : `${source === "desktop" ? "デスクトップ" : "タスクバー"}からメモ帳を開きました。`);
       notesOpenedRef.current = true;
     }
+  };
+
+  const openDesktopShortcut = (app: AppId) => {
+    setSelectedDesktopIcon(app);
+    openApp(app, "desktop");
   };
 
   const taskbarActivate = (app: AppId) => {
@@ -144,9 +153,9 @@ export function WindowsDesktopWorkspace({ missionId, emit }: WorkspaceProps) {
 
   const renderControls = (app: AppId) => (
     <div className="win11-window-controls">
-      <button type="button" aria-label={`${appNames[app]}を最小化`} onClick={() => minimize(app)}>—</button>
-      <button type="button" aria-label={windows[app].mode === "maximized" ? `${appNames[app]}を元のサイズに戻す` : `${appNames[app]}を最大化`} onClick={() => toggleMaximize(app)}>{windows[app].mode === "maximized" ? "❐" : "□"}</button>
-      <button className="is-close" type="button" aria-label={`${appNames[app]}を閉じる`} onClick={() => closeWindow(app)}>×</button>
+      <button type="button" aria-label={`${appNames[app]}の「―（最小化）」ボタン`} title="―（最小化）" onClick={() => minimize(app)}>―</button>
+      <button type="button" aria-label={windows[app].mode === "maximized" ? `${appNames[app]}の「❐（元のサイズに戻す）」ボタン` : `${appNames[app]}の「□（最大化）」ボタン`} title={windows[app].mode === "maximized" ? "❐（元のサイズに戻す）" : "□（最大化）"} onClick={() => toggleMaximize(app)}>{windows[app].mode === "maximized" ? "❐" : "□"}</button>
+      <button className="is-close" type="button" aria-label={`${appNames[app]}の「×（閉じる）」ボタン`} title="×（閉じる）" onClick={() => closeWindow(app)}>×</button>
     </div>
   );
 
@@ -154,26 +163,28 @@ export function WindowsDesktopWorkspace({ missionId, emit }: WorkspaceProps) {
     <div className="win11-desktop" aria-label="Windows 11 デスクトップ">
       <div className="win11-wallpaper" aria-hidden="true" />
       <div className="win11-desktop-icons" aria-label="デスクトップのアイコン">
-        <button type="button"><span>🗑️</span>ごみ箱</button>
-        <button type="button"><span>📁</span>資料</button>
+        <button type="button" aria-label="インターネットブラウザ（ダブルクリックで開く）" aria-pressed={selectedDesktopIcon === "edge"} onClick={() => setSelectedDesktopIcon("edge")} onDoubleClick={() => openDesktopShortcut("edge")} onKeyDown={(event) => { if (event.key === "Enter") openDesktopShortcut("edge"); }}><span className="browser-globe-icon" aria-hidden="true">🌐</span>インターネット<br />ブラウザ</button>
+        <button type="button" aria-label="メモ帳（ダブルクリックで開く）" aria-pressed={selectedDesktopIcon === "notepad"} onClick={() => setSelectedDesktopIcon("notepad")} onDoubleClick={() => openDesktopShortcut("notepad")} onKeyDown={(event) => { if (event.key === "Enter") openDesktopShortcut("notepad"); }}><span className="notepad-app-icon" aria-hidden="true">▤</span>メモ帳</button>
+        <button type="button" aria-label="ごみ箱"><span>🗑️</span>ごみ箱</button>
+        <button type="button" aria-label="資料フォルダー"><span>📁</span>資料</button>
       </div>
 
       {windows.edge.mode !== "closed" && windows.edge.mode !== "minimized" ? (
         <section
           className={`win11-window win11-window--edge is-${windows.edge.mode}${activeApp === "edge" ? " is-active" : ""}`}
           style={windows.edge.mode === "normal" ? { left: windows.edge.x, top: windows.edge.y, zIndex: windows.edge.z } : { zIndex: windows.edge.z }}
-          aria-label="Microsoft Edge"
+          aria-label="インターネットブラウザ"
           onPointerDown={() => bringToFront("edge")}
         >
           <header className="win11-titlebar" onPointerDown={(event) => beginDrag("edge", event)} onPointerMove={dragWindow} onPointerUp={endDrag}>
-            <span className="edge-app-icon" aria-hidden="true">e</span><strong>Microsoft Edge</strong>{renderControls("edge")}
+            <span className="browser-globe-icon" aria-hidden="true">🌐</span><strong>インターネットブラウザ</strong>{renderControls("edge")}
           </header>
           <div className="edge-tabs"><span className="is-current">{browserPage === "results" ? "検索結果" : "中央公民館｜施設案内"}</span><button type="button" aria-label="新しいタブ">＋</button></div>
           <div className="edge-toolbar" aria-label="ブラウザの操作バー">
-            <button type="button" aria-label="戻る" disabled={browserPage === "results"} onClick={() => { setBrowserPage("results"); emit("went-back", "Microsoft Edgeの戻るボタンで検索結果へ戻りました。"); }}>←</button>
+            <button type="button" aria-label="←（戻る）ボタン" title="←（戻る）" disabled={browserPage === "results"} onClick={() => { setBrowserPage("results"); emit("went-back", "インターネットブラウザの「←（戻る）」ボタンで検索結果へ戻りました。"); }}>←</button>
             <button type="button" aria-label="再読み込み">↻</button>
             <div><span aria-hidden="true">🔒</span>{browserPage === "results" ? "https://www.google.co.jp/search?q=中央公民館" : "https://www.city.midori.example/community-center"}</div>
-            <button type="button" aria-label="Microsoft Edgeの設定など">…</button>
+            <button type="button" aria-label="インターネットブラウザの設定など">…</button>
           </div>
           <div className="edge-page">
             {browserPage === "results" ? <div className="edge-results"><p>検索結果</p><button type="button" onClick={() => { setBrowserPage("facility"); emit("page-opened", "検索結果から中央公民館の施設案内を開きました。"); }}><small>www.city.midori.example › community-center</small><strong>中央公民館｜施設案内</strong><span>開館時間・所在地・利用案内</span></button></div> : <article><p>みどり市公式ホームページ</p><h3>中央公民館 施設案内</h3><p>開館時間：午前9時～午後8時</p><p>休館日：毎週月曜日</p></article>}
@@ -200,8 +211,8 @@ export function WindowsDesktopWorkspace({ missionId, emit }: WorkspaceProps) {
       <div className="win11-taskbar">
         <button type="button" aria-label="スタート"><span aria-hidden="true">⊞</span></button>
         <button type="button" aria-label="検索"><span aria-hidden="true">⌕</span></button>
-        <button className={windows.edge.mode !== "closed" ? "is-open" : ""} aria-pressed={activeApp === "edge"} type="button" onClick={() => taskbarActivate("edge")}><span className="edge-app-icon" aria-hidden="true">e</span><span className="sr-only">Microsoft Edge</span></button>
-        <button className={windows.notepad.mode !== "closed" ? "is-open" : ""} aria-pressed={activeApp === "notepad"} type="button" onClick={() => taskbarActivate("notepad")}><span className="notepad-app-icon" aria-hidden="true">▤</span><span className="sr-only">メモ帳</span></button>
+        <button className={windows.edge.mode !== "closed" ? "is-open" : ""} aria-label="インターネットブラウザ（1回左クリックで開く・切り替える）" aria-pressed={activeApp === "edge"} type="button" onClick={() => taskbarActivate("edge")}><span className="browser-globe-icon" aria-hidden="true">🌐</span></button>
+        <button className={windows.notepad.mode !== "closed" ? "is-open" : ""} aria-label="メモ帳（1回左クリックで開く・切り替える）" aria-pressed={activeApp === "notepad"} type="button" onClick={() => taskbarActivate("notepad")}><span className="notepad-app-icon" aria-hidden="true">▤</span></button>
         <div className="win11-tray"><span>⌃　Wi-Fi　▰</span><time>11:24<br />2026/07/19</time></div>
       </div>
     </div>

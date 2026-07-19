@@ -73,7 +73,7 @@ const workspaceComponents: Record<WorkspaceId, (props: WorkspaceProps) => React.
 };
 
 function practiceAppName(workspace: WorkspaceId, missionId: string, environment: JourneyEnvironment) {
-  if (workspace === "web") return environment === "windows" ? "Microsoft Edge" : "ブラウザ";
+  if (workspace === "web") return "インターネットブラウザ";
   if (missionId === "attach-review") return "メール";
   if (workspace === "files" || missionId === "context") return environment === "windows" ? "エクスプローラー" : "ファイル";
   if (missionId === "typing") return "カレンダー";
@@ -85,9 +85,9 @@ function practiceAppName(workspace: WorkspaceId, missionId: string, environment:
   if (missionId === "suspicious-message") return "メール";
   if (workspace === "safety") return "設定";
   if (missionId === "wifi-recovery") return "ネットワークとインターネット";
-  if (missionId === "help-search") return "Microsoft Edge";
+  if (missionId === "help-search") return "インターネットブラウザ";
   if (workspace === "recovery") return "設定";
-  return missionId === "scroll" ? "Microsoft Edge" : "カレンダー";
+  return missionId === "scroll" ? "インターネットブラウザ" : "カレンダー";
 }
 
 export function PracticalLab({ completion, environment, missionId = "pointer", onComplete, onAction, onRecovery, freePlay = false }: PracticalLabProps) {
@@ -213,18 +213,18 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
           {environment === "windows" ? <div className="windows-desktop-icons" aria-hidden="true"><span>🗑<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
           {appWindowMode !== "closed" && appWindowMode !== "minimized" ? <div className={`practice-app-window is-${appWindowMode}`} style={appWindowMode === "normal" ? { transform: `translate(${appWindowPosition.x}px, ${appWindowPosition.y}px)` } : undefined}>
             <div className="practice-app-window__titlebar" onPointerDown={beginAppWindowDrag} onPointerMove={dragAppWindow} onPointerUp={endAppWindowDrag}>
-              {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <span className="practice-app-icon" aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "e" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span>}
+              {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <span className="practice-app-icon" aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "🌐" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span>}
               <strong>{currentAppName}</strong>
               {environment === "windows" ? <div className="practice-window-controls">
-                <button type="button" aria-label={`${currentAppName}を最小化`} onClick={() => setAppWindowMode("minimized")}>—</button>
-                <button type="button" aria-label={appWindowMode === "maximized" ? `${currentAppName}を元のサイズに戻す` : `${currentAppName}を最大化`} onClick={() => setAppWindowMode((current) => current === "maximized" ? "normal" : "maximized")}>{appWindowMode === "maximized" ? "❐" : "□"}</button>
-                <button className="is-close" type="button" aria-label={`${currentAppName}を閉じる`} onClick={() => setAppWindowMode("closed")}>×</button>
+                <button type="button" aria-label={`${currentAppName}の「―（最小化）」ボタン`} title="―（最小化）" onClick={() => setAppWindowMode("minimized")}>―</button>
+                <button type="button" aria-label={appWindowMode === "maximized" ? `${currentAppName}の「❐（元のサイズに戻す）」ボタン` : `${currentAppName}の「□（最大化）」ボタン`} title={appWindowMode === "maximized" ? "❐（元のサイズに戻す）" : "□（最大化）"} onClick={() => setAppWindowMode((current) => current === "maximized" ? "normal" : "maximized")}>{appWindowMode === "maximized" ? "❐" : "□"}</button>
+                <button className="is-close" type="button" aria-label={`${currentAppName}の「×（閉じる）」ボタン`} title="×（閉じる）" onClick={() => setAppWindowMode("closed")}>×</button>
               </div> : environment === "iphone" || environment === "android" ? <span className="mobile-status-icons" aria-hidden="true">11:24　●●●</span> : null}
             </div>
             {activeWorkspace === "movement" && missionId === "scroll" ? <div className="practice-browser-toolbar" aria-hidden="true"><span>←</span><span>↻</span><div>🔒 https://www.midori-city.example/event/summer</div><span>…</span></div> : null}
             <div className="practical-lab__body">{renderWorkspace(activeWorkspace)}</div>
           </div> : null}
-          {environment === "windows" ? <div className="windows-taskbar"><span className="windows-start" aria-hidden="true">⊞</span><span aria-hidden="true">⌕</span><span aria-hidden="true">▰</span><button className={appWindowMode !== "closed" ? "is-open" : ""} type="button" aria-label={`${currentAppName}を表示`} onClick={() => setAppWindowMode("normal")}><span aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "e" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span></button><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
+          {environment === "windows" ? <div className="windows-taskbar"><span className="windows-start" aria-hidden="true">⊞</span><span aria-hidden="true">⌕</span><span aria-hidden="true">▰</span><button className={appWindowMode !== "closed" ? "is-open" : ""} type="button" aria-label={`${currentAppName}を表示`} onClick={() => setAppWindowMode("normal")}><span aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "🌐" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span></button><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
         </>}
       </div>
 
