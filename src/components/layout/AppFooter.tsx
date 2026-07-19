@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export function AppFooter() {
   const pathname = usePathname();
-  if (pathname.startsWith("/mission/")) return null;
+  if (pathname === "/" || pathname === "/start" || pathname.startsWith("/mission/") || pathname.startsWith("/journey/")) return null;
 
   return (
     <footer className="app-footer">
@@ -13,7 +13,7 @@ export function AppFooter() {
         <div>
           <p className="app-brand__name">PC・スマホ実践アプリ</p>
           <p className="app-footer__message">
-            実際のデータには触れない、安全な練習空間です。
+            このアプリから本物のメール送信や購入は行いません。
           </p>
         </div>
 

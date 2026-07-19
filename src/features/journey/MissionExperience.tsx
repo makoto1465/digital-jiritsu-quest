@@ -2,55 +2,48 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-
+import { GlossaryTerm, areaTerms } from "@/components/learning/GlossaryTerm";
 import { journeyAreas, journeyMissions } from "@/content/journey";
 import { PracticalLab } from "@/features/lab/PracticalLab";
 import { useProgress, type JourneyEnvironment, type SupportLevel } from "@/features/progress/ProgressProvider";
 import type { MissionDefinition } from "@/lib/journey-types";
 
-type MissionPhase = "purpose" | "orientation" | "practice" | "complete";
+type MissionPhase = "intro" | "practice" | "complete";
 
 const environmentNames: Record<JourneyEnvironment, string> = {
-  windows: "Windows",
+  windows: "Windows パソコン",
   mac: "Mac",
   iphone: "iPhone",
-  android: "Android",
+  android: "Android スマートフォン",
 };
 
 export function MissionExperience({ environment, mission }: { environment: JourneyEnvironment; mission: MissionDefinition }) {
-  const [phase, setPhase] = useState<MissionPhase>("purpose");
+  const [phase, setPhase] = useState<MissionPhase>("intro");
   const [hintLevel, setHintLevel] = useState<SupportLevel>(0);
   const [evidence, setEvidence] = useState<string[]>([]);
   const [wasCompletedBeforeAttempt, setWasCompletedBeforeAttempt] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const {
-    progress,
-    completeMission,
-    recordMissionAttempt,
-    recordJourneyHint,
-    recordJourneyRecovery,
-  } = useProgress();
+  const { progress, completeMission, recordMissionAttempt, recordJourneyHint, recordJourneyRecovery } = useProgress();
   const area = journeyAreas.find((item) => item.id === mission.areaId) ?? journeyAreas[0];
   const missionIndex = journeyMissions.findIndex((item) => item.id === mission.id);
   const nextMission = journeyMissions[missionIndex + 1];
   const alreadyCompleted = progress.completedMissionKeys.includes(`${environment}:${mission.id}`);
+  const operation = mission.environmentOperations[environment];
 
-  useEffect(() => {
-    headingRef.current?.focus();
-  }, [phase]);
+  useEffect(() => { headingRef.current?.focus(); }, [phase]);
 
-  const beginPractice = () => {
+  function beginPractice() {
     setWasCompletedBeforeAttempt(alreadyCompleted);
     recordMissionAttempt(environment, mission.id);
     setPhase("practice");
-  };
+  }
 
-  const revealHint = () => {
+  function revealHint() {
     if (hintLevel >= 3) return;
     const next = (hintLevel + 1) as SupportLevel;
     setHintLevel(next);
     recordJourneyHint(environment, mission.id);
-  };
+  }
 
   const finishMission = useCallback((collectedEvidence: string[]) => {
     setEvidence(collectedEvidence);
@@ -58,74 +51,73 @@ export function MissionExperience({ environment, mission }: { environment: Journ
     setPhase("complete");
   }, [completeMission, environment, hintLevel, mission.competencyIds, mission.id]);
 
-  const restart = () => {
+  function restart() {
     setEvidence([]);
     setHintLevel(0);
-    setPhase("purpose");
-  };
+    setPhase("intro");
+  }
 
-  const hintText = hintLevel === 1
-    ? mission.hints.direction
-    : hintLevel === 2
-      ? mission.hints.feature
-      : hintLevel === 3
-        ? mission.hints.action[environment]
-        : "";
+  const hintText = hintLevel === 1 ? mission.hints.direction : hintLevel === 2 ? mission.hints.feature : hintLevel === 3 ? mission.hints.action[environment] : "";
 
   return (
     <div className={`mission-page mission-phase--${phase}`}>
-      <div className="mission-progress" aria-label={`全32ミッション中${mission.order}番目`}>
-        <span style={{ width: `${(mission.order / journeyMissions.length) * 100}%` }} />
-      </div>
+      <div className="mission-progress" aria-label={`全32項目中${mission.order}番目`}><span style={{ width: `${(mission.order / journeyMissions.length) * 100}%` }} /></div>
 
-      {phase === "purpose" ? (
-        <section className="mission-brief shell shell--narrow">
-          <div className="mission-brief__meta"><span>AREA {area.order}・{area.title}</span><span>{mission.estimatedMinutes}分ほど</span></div>
-          <p className="section-label">MISSION {String(mission.order).padStart(2, "0")}</p>
-          <h1 ref={headingRef} tabIndex={-1}>{mission.title}</h1>
-          <p className="mission-statement">{mission.mission}</p>
-          <div className="briefing-focus"><span aria-hidden="true">◎</span><div><p>今日できるようになること</p><strong>{mission.objective}</strong></div></div>
+      {phase === "intro" ? (
+        <section className="mission-intro shell shell--narrow">
+          <header>
+            <p>{area.order}. {area.title}　・　{mission.estimatedMinutes}分ほど</p>
+            <h1 ref={headingRef} tabIndex={-1}>{mission.title}</h1>
+            <div className="mission-task"><span>やること</span><strong>{mission.mission}</strong></div>
+          </header>
+
+          <section className="mission-steps" aria-labelledby="steps-title">
+            <h2 id="steps-title">この順番で操作します</h2>
+            <ol>
+              {operation.steps.slice(0, 3).map((step, index) => <li key={step}><span>{index + 1}</span><strong>{step}</strong></li>)}
+            </ol>
+            <p>{operation.difference}</p>
+          </section>
+
+          <section className="mission-terms" aria-label="先に覚える言葉">
+            <strong>青い言葉を押すと、意味が分かります。</strong>
+            <div>{areaTerms[mission.areaId].map((term) => <GlossaryTerm key={term} term={term} />)}</div>
+          </section>
+
           <div className={`safety-boundary safety-boundary--${mission.danger.level}`}><span>{mission.danger.label}</span><p>{mission.danger.message}</p></div>
-          <div className="mission-brief__actions"><Link className="text-link" href={`/journey/${environment}`}>今日はやめておく</Link><button className="primary-action" type="button" onClick={() => setPhase("orientation")}>練習の準備へ <span aria-hidden="true">→</span></button></div>
-        </section>
-      ) : null}
-
-      {phase === "orientation" ? (
-        <section className="mission-brief shell shell--narrow">
-          <p className="section-label">{environmentNames[environment]}で試します</p>
-          <h1 ref={headingRef} tabIndex={-1}>最初に、画面の手掛かりを見ます</h1>
-          <p className="mission-statement">練習画面は壊れません。すぐに正解を探さず、操作した後に何が変わったかを見てください。</p>
-          {mission.guidance === "show" ? (
-            <div className="orientation-example"><span>最初のミッションなので見本があります</span><ol>{mission.environmentOperations[environment].steps.map((step) => <li key={step}>{step}</li>)}</ol><p>{mission.environmentOperations[environment].difference}</p></div>
-          ) : mission.guidance === "coach" ? (
-            <div className="orientation-example orientation-example--light"><span>覚えておく手掛かり</span><p>{mission.environmentOperations[environment].difference}</p><p>必要になったら、練習中にヒントを一段ずつ開けます。</p></div>
-          ) : (
-            <div className="orientation-example orientation-example--challenge"><span>自力チャレンジ</span><p>操作手順は先に表示しません。目的と安全範囲を手掛かりに進み、困ったときは調べる方法も選べます。</p></div>
-          )}
-          <div className="mission-brief__actions"><button className="secondary-action" type="button" onClick={() => setPhase("purpose")}>← 目的を見直す</button><button className="primary-action" type="button" onClick={beginPractice}>安全な練習画面を開く <span aria-hidden="true">→</span></button></div>
+          <div className="mission-intro__actions">
+            <Link href={`/journey/${environment}`}>学習メニューへ戻る</Link>
+            <button className="primary-action" type="button" onClick={beginPractice}>練習を始める <span aria-hidden="true">→</span></button>
+          </div>
         </section>
       ) : null}
 
       {phase === "practice" ? (
         <section className="mission-practice shell shell--wide">
-          <header className="mission-practice__heading"><div><p className="section-label">MISSION {String(mission.order).padStart(2, "0")} ・ {environmentNames[environment]}</p><h1 ref={headingRef} tabIndex={-1}>{mission.title}</h1></div><span className={`risk-chip risk-chip--${mission.danger.level}`}>{mission.danger.label}</span></header>
+          <header className="mission-practice__heading"><div><p>{environmentNames[environment]}で練習中</p><h1 ref={headingRef} tabIndex={-1}>{mission.title}</h1></div><span className={`risk-chip risk-chip--${mission.danger.level}`}>{mission.danger.label}</span></header>
           <PracticalLab environment={environment} missionId={mission.id} onComplete={finishMission} onRecovery={() => recordJourneyRecovery(environment, mission.id)} />
-          <aside className="hint-drawer" aria-label="段階ヒント">
-            <div><span>手掛かり {hintLevel} / 3</span>{hintText ? <p aria-live="polite">{hintText}</p> : <p>まだ手掛かりを使っていません。まず自由に観察できます。</p>}</div>
-            <button type="button" onClick={revealHint} disabled={hintLevel >= 3}>{hintLevel === 0 ? "手掛かりを一つ見る" : hintLevel < 3 ? "もう少し具体的に" : "すべて表示済み"}</button>
+          <aside className="hint-drawer" aria-label="ヒント">
+            <div><span>ヒント {hintLevel} / 3</span>{hintText ? <p aria-live="polite">{hintText}</p> : <p>困ったときだけ、右のボタンを押してください。</p>}</div>
+            <button type="button" onClick={revealHint} disabled={hintLevel >= 3}>{hintLevel === 0 ? "ヒントを見る" : hintLevel < 3 ? "次のヒントを見る" : "すべて表示しました"}</button>
           </aside>
         </section>
       ) : null}
 
       {phase === "complete" ? (
         <section className="mission-clear shell shell--narrow">
-          <div className="clear-orbit" aria-hidden="true"><span>✓</span></div>
-          <p className="section-label">MISSION COMPLETE</p>
-          <h1 ref={headingRef} tabIndex={-1}>{wasCompletedBeforeAttempt ? "もう一度、確かめられました。" : "生活で使える一歩です。"}</h1>
+          <div className="celebration" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}<span>✓</span></div>
+          <p className="mission-clear__label">練習できました</p>
+          <h1 ref={headingRef} tabIndex={-1}>{wasCompletedBeforeAttempt ? "もう一度できました！" : "できました！"}</h1>
           <p className="mission-statement">{mission.afterCompletion}</p>
-          <div className="clear-evidence"><p>今回の記録</p><dl><div><dt>支援</dt><dd>{hintLevel === 0 ? "ヒントなし" : hintLevel === 1 ? "方向だけ" : hintLevel === 2 ? "機能名まで" : "具体操作まで"}</dd></div><div><dt>確かめた状態</dt><dd>{evidence.length}件</dd></div><div><dt>次に再登場</dt><dd>{mission.transferTo.length ? journeyMissions.find((item) => item.id === mission.transferTo[0])?.title ?? "別の生活場面" : "自由練習"}</dd></div></dl></div>
-          <blockquote>「正しいボタンを覚えた」ではなく、<strong>画面を見て、試し、結果を確かめた</strong>ことが今回の成果です。</blockquote>
-          <div className="clear-actions">{nextMission ? <Link className="primary-action" href={`/mission/${environment}/${nextMission.id}`}>次のミッションへ <span aria-hidden="true">→</span></Link> : <Link className="primary-action" href={`/practice/${environment}`}>自由練習へ <span aria-hidden="true">→</span></Link>}<Link className="secondary-action" href={`/journey/${environment}`}>全体の道を見る</Link><button className="text-button" type="button" onClick={restart}>同じ練習をもう一度</button></div>
+          <div className="clear-evidence">
+            <p>今回できたこと</p>
+            <dl><div><dt>練習した操作</dt><dd>{mission.title}</dd></div><div><dt>使ったヒント</dt><dd>{hintLevel === 0 ? "なし" : `${hintLevel}回`}</dd></div><div><dt>確認できたこと</dt><dd>{evidence.length}件</dd></div></dl>
+          </div>
+          <div className="clear-actions">
+            {nextMission ? <Link className="primary-action" href={`/mission/${environment}/${nextMission.id}`}>次の練習へ <span aria-hidden="true">→</span></Link> : <Link className="primary-action" href={`/practice/${environment}`}>自由練習へ <span aria-hidden="true">→</span></Link>}
+            <Link className="secondary-action" href={`/journey/${environment}`}>学習メニューへ戻る</Link>
+            <button className="text-button" type="button" onClick={restart}>同じ練習をもう一度</button>
+          </div>
         </section>
       ) : null}
     </div>

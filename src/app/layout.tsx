@@ -11,11 +11,11 @@ export const metadata: Metadata = {
     template: "%s | PC・スマホ実践アプリ",
   },
   description:
-    "Windows、Mac、iPhone、Androidの実践操作を、失敗しても戻せる安全な画面で学ぶデジタル自立トレーニング。",
+    "Windowsパソコン、Mac、iPhone、Androidスマートフォンの基本操作を、画面を見ながら練習できるアプリです。",
   applicationName: "PC・スマホ実践アプリ",
   openGraph: {
     title: "PC・スマホ実践アプリ",
-    description: "分からない画面でも、見つけて、試して、戻せる力を育てよう。",
+    description: "パソコン・スマートフォンの基本操作を、画面で一つずつ練習できます。",
     type: "website",
     locale: "ja_JP",
   },
@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ja" suppressHydrationWarning>
+    <html lang="ja" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
         <AppProviders>
           <AppHeader />

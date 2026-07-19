@@ -67,8 +67,10 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>(challenge.workspace);
   const [actions, setActions] = useState<ActionLog[]>([]);
   const [sessionKey, setSessionKey] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
   const sequenceRef = useRef(0);
   const completionReported = useRef(false);
+  const completionButtonRef = useRef<HTMLButtonElement>(null);
   const eventIds = useMemo(() => actions.map((action) => action.eventId), [actions]);
   const evaluation = useMemo(() => evaluateChallenge(challenge, eventIds), [challenge, eventIds]);
   const successEvidence = useMemo(() => {
@@ -78,15 +80,21 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
       ...mission.success.evidence.filter((item) => item.required).map((item) => `evidence:${item.key}`),
     ];
   }, [evaluation.complete, eventIds, mission]);
-  const displayedObjective = missionId === "pointer" && (environment === "windows" || environment === "mac")
-    ? `${challenge.objective} 青いフォルダーではダブルクリックも自由に試せます。`
-    : challenge.objective;
+  const displayedObjective = challenge.objective;
 
   useEffect(() => {
-    if (freePlay || !evaluation.complete || completionReported.current) return;
+    if (!freePlay && evaluation.complete && !completionReported.current) setShowSuccess(true);
+  }, [evaluation.complete, freePlay]);
+
+  useEffect(() => {
+    if (showSuccess) completionButtonRef.current?.focus();
+  }, [showSuccess]);
+
+  const confirmCompletion = () => {
+    if (completionReported.current) return;
     completionReported.current = true;
     onComplete?.(successEvidence);
-  }, [evaluation.complete, freePlay, onComplete, successEvidence]);
+  };
 
   const emit = (eventId: string, message: string) => {
     setActions((current) => {
@@ -100,6 +108,7 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
   const reset = () => {
     setActions([]);
     setSessionKey((current) => current + 1);
+    setShowSuccess(false);
     completionReported.current = false;
     onRecovery?.();
   };
@@ -114,10 +123,10 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
     <section className={`practical-lab practical-lab--${environment}`} aria-label={`${environmentNames[environment]}の練習画面`}>
       <header className="practical-lab__header">
         <div>
-          <p><span className="live-dot" /> 安全な練習環境</p>
-          <strong>{environmentNames[environment]} ラボ</strong>
+          <p><span className="live-dot" /> 操作練習</p>
+          <strong>{environmentNames[environment]}の画面</strong>
         </div>
-        <p>この中の操作は実際のデータへ影響しません</p>
+        <p>この画面では、本物の送信・削除・購入は行いません</p>
       </header>
 
       {freePlay ? (
@@ -128,7 +137,7 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
         </nav>
       ) : (
         <div className="lab-mission-strip">
-          <span>今回の目的</span>
+          <span>やること</span>
           <p>{displayedObjective}</p>
           <div className="lab-state-meter" aria-label={`${evaluation.totalGroups}項目中${evaluation.completedGroups}項目の状態を確認`}>
             {challenge.required.map((_, index) => <span className={index < evaluation.completedGroups ? "is-done" : ""} key={index} />)}
@@ -140,12 +149,28 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
         {renderWorkspace(activeWorkspace)}
       </div>
 
+      {evaluation.complete && showSuccess ? (
+        <div className="lab-success" role="dialog" aria-modal="true" aria-labelledby="lab-success-title">
+          <div className="lab-success__card">
+            <div className="lab-success__mark" aria-hidden="true"><span>✓</span></div>
+            <p>正しく操作できました</p>
+            <h2 id="lab-success-title">できました！</h2>
+            <p>{mission?.afterCompletion ?? challenge.successNote}</p>
+            <div>
+              <button type="button" onClick={() => setShowSuccess(false)}>操作した画面を確認する</button>
+              <button ref={completionButtonRef} type="button" onClick={confirmCompletion}>できたことを記録して次へ</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <footer className="practical-lab__footer">
         <div className={`lab-feedback${evaluation.blocked ? " is-warning" : evaluation.complete ? " is-complete" : ""}`} aria-live="polite">
           <span aria-hidden="true">{evaluation.blocked ? "!" : evaluation.complete ? "✓" : actions.length ? "↳" : "○"}</span>
-          <p>{evaluation.blocked ? "確定前に止まりたい操作でした。練習をやり直し、別の安全な経路を探せます。" : evaluation.complete ? mission?.success.summary ?? challenge.successNote : actions.at(-1)?.message ?? "まず画面を観察して、試してよい操作から始めましょう。"}</p>
+          <p>{evaluation.blocked ? "確定する前に止める操作です。最初からやり直して、別の方法を試してください。" : evaluation.complete ? "できました。操作した画面を確認してから、次へ進めます。" : actions.at(-1)?.message ?? "上の『やること』を見て、画面の中を操作してください。"}</p>
         </div>
         <div className="lab-recovery-actions">
+          {evaluation.complete && !showSuccess ? <button className="lab-success-again" type="button" onClick={() => setShowSuccess(true)}>できたことを確認する</button> : null}
           <button type="button" onClick={reset}>↶ この練習を最初からやり直す</button>
         </div>
         <details className="action-history">

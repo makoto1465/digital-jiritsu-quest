@@ -11,12 +11,12 @@ export function AreaExperience({ environment, area }: { environment: JourneyEnvi
   const missions = journeyMissions.filter((mission) => mission.areaId === area.id);
   return (
     <div className="area-page shell">
-      <Link className="back-link" href={`/journey/${environment}`}>← 全体の道へ戻る</Link>
+      <Link className="back-link" href={`/journey/${environment}`}>← 学習メニューへ戻る</Link>
       <header className="area-page__header">
-        <p className="section-label">AREA {String(area.order).padStart(2, "0")} ・ 4 MISSIONS</p>
+        <p className="section-label">{area.order}番目の内容・練習4項目</p>
         <h1>{area.title}</h1>
         <p>{area.description}</p>
-        <div><span>このエリアの到達点</span><strong>{area.outcome}</strong></div>
+        <div><span>この4項目でできるようになること</span><strong>{area.outcome}</strong></div>
       </header>
       <ol className="mission-list">
         {missions.map((mission, index) => {

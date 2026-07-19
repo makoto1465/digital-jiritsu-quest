@@ -19,8 +19,8 @@ const challenge = (
 export const missionChallenges: Record<string, MissionChallenge> = {
   pointer: challenge("movement", "予定表の『7月19日』を一度選んでください。", "ねらった対象と、選んだ後の変化を確認できました。", [["target-selected"]]),
   scroll: challenge("movement", "お知らせを下へ動かし、『持ち物』を見つけて選んでください。", "画面外にも内容が続く手掛かりを見つけました。", [["notice-scrolled"], ["detail-found"]]),
-  context: challenge("movement", "『参加資料』から補助メニューを開き、『情報を見る』を選んでください。", "表面にない操作を、環境に合う方法で開けました。", [["context-opened"], ["info-inspected"]]),
-  recovery: challenge("movement", "『練習メモ』をゴミ箱へ動かし、起きた変化を見てから元に戻してください。", "誤操作のあと、状態を見て取り消せました。", [["item-trashed"], ["action-undone"]]),
+  context: challenge("movement", "『参考資料』フォルダーのメニューを開き、『情報を見る』を押してください。", "フォルダーのメニューを開き、情報を確認できました。", [["context-opened"], ["info-inspected"]]),
+  recovery: challenge("movement", "『町内会のお知らせ.txt』ファイルをゴミ箱へ移し、元に戻してください。", "ファイルをゴミ箱から元の場所へ戻せました。", [["item-trashed"], ["action-undone"]]),
 
   navigation: challenge("screens", "ブラウザで『施設案内』を開き、ひとつ前の画面へ戻ってください。", "現在地を失わず、履歴を使って戻れました。", [["page-opened"], ["went-back"]]),
   "open-close": challenge("screens", "メモを開いて閉じ、もう一度開いてください。内容が残ることも確かめます。", "アプリを閉じることと、内容を消すことを区別できました。", [["notes-opened"], ["window-closed"], ["app-reopened"]]),

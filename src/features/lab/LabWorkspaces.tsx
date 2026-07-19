@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from "react";
 
+import { GlossaryTerm } from "@/components/learning/GlossaryTerm";
 import type { JourneyEnvironment } from "@/features/progress/ProgressProvider";
 
 export interface WorkspaceProps {
@@ -44,11 +45,11 @@ function ContextTarget({ environment, emit }: Pick<WorkspaceProps, "environment"
         type="button"
       >
         <span aria-hidden="true">📁</span>
-        参加資料
+        参考資料
       </button>
-      <small>{environmentCopy[environment].context}で、ほかの操作を探せます</small>
+      <small>フォルダー・{environmentCopy[environment].context}でメニューを開く</small>
       {menuOpen ? (
-        <div className="lab-menu" role="group" aria-label="参加資料の補助メニュー">
+        <div className="lab-menu" role="group" aria-label="参考資料フォルダーのメニュー">
           <button type="button" onClick={() => { emit("info-inspected", "種類と場所を確認しました。"); setMenuOpen(false); }}>情報を見る</button>
           <button type="button" onClick={() => setMenuOpen(false)}>閉じる</button>
         </div>
@@ -65,7 +66,7 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
   const trashMemo = () => {
     setTrashed(true);
     pointerDraggingRef.current = false;
-    emit("item-trashed", "練習メモがゴミ箱へ移りました。");
+    emit("item-trashed", "町内会のお知らせ.txtファイルがゴミ箱へ移りました。");
   };
   return (
     <div className="lab-workspace-grid lab-workspace-grid--movement">
@@ -103,6 +104,7 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
 
       <section className="lab-panel" aria-labelledby="files-title">
         <div className="lab-panel__bar"><span /><h3 id="files-title">{environmentCopy[environment].files}</h3></div>
+        <div className="workspace-terms"><span>画面に出てくる言葉：</span><GlossaryTerm term="folder" /><GlossaryTerm term="file" /></div>
         <div className="lab-files-row">
           <ContextTarget environment={environment} emit={emit} />
           <button
@@ -126,9 +128,9 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
               onClick={(event) => { if (event.detail === 0) trashMemo(); }}
               type="button"
             >
-              📝 練習メモ <small>ドラッグ／キーボードで移動できます</small>
+              📄 町内会のお知らせ.txt <small>ファイル・ゴミ箱へ動かしてください</small>
             </button>
-          ) : <p className="empty-slot">練習メモはゴミ箱にあります</p>}
+          ) : <p className="empty-slot">町内会のお知らせ.txtファイルはゴミ箱にあります</p>}
           <div
             className="trash-target"
             onDragOver={(event) => event.preventDefault()}
@@ -139,7 +141,7 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
             }}
           >🗑️ ゴミ箱</div>
         </div>
-        {trashed ? <button className="lab-undo" type="button" onClick={() => { setTrashed(false); emit("action-undone", "練習メモを元の場所へ戻しました。"); }}>↶ いまの移動を取り消す</button> : null}
+        {trashed ? <button className="lab-undo" type="button" onClick={() => { setTrashed(false); emit("action-undone", "町内会のお知らせ.txtファイルを元の場所へ戻しました。"); }}>↶ ファイルを元に戻す</button> : null}
       </section>
     </div>
   );
