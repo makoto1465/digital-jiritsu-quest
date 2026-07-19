@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from "react";
 
-import { GlossaryTerm } from "@/components/learning/GlossaryTerm";
 import type { JourneyEnvironment } from "@/features/progress/ProgressProvider";
 
 export interface WorkspaceProps {
@@ -58,11 +57,11 @@ function ContextTarget({ environment, emit }: Pick<WorkspaceProps, "environment"
   );
 }
 
-export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
+export function MovementWorkspace({ environment, emit, missionId }: WorkspaceProps) {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [trashed, setTrashed] = useState(false);
-  const [opened, setOpened] = useState(false);
   const pointerDraggingRef = useRef(false);
+  const showAll = missionId === "free-play";
   const trashMemo = () => {
     setTrashed(true);
     pointerDraggingRef.current = false;
@@ -70,7 +69,7 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
   };
   return (
     <div className="lab-workspace-grid lab-workspace-grid--movement">
-      <section className="lab-panel" aria-labelledby="calendar-title">
+      {missionId === "pointer" || showAll ? <section className="lab-panel" aria-labelledby="calendar-title">
         <div className="lab-panel__bar"><span /><h3 id="calendar-title">7月の予定</h3></div>
         <div className="mini-calendar" role="group" aria-label="7月の予定表">
           {[17, 18, 19, 20, 21, 22].map((day) => (
@@ -85,9 +84,9 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
             </button>
           ))}
         </div>
-      </section>
+      </section> : null}
 
-      <section className="lab-panel" aria-labelledby="notice-title">
+      {missionId === "scroll" || showAll ? <section className="lab-panel" aria-labelledby="notice-title">
         <div className="lab-panel__bar"><span /><h3 id="notice-title">夏祭りのお知らせ</h3></div>
         <div className="scroll-notice" tabIndex={0} onScroll={(event) => {
           if (event.currentTarget.scrollTop > 80) emit("notice-scrolled", "お知らせの続きを下へ動かしました。");
@@ -100,22 +99,17 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
             <strong>持ち物</strong><br />青いタオル
           </button>
         </div>
-      </section>
+      </section> : null}
 
-      <section className="lab-panel" aria-labelledby="files-title">
+      {missionId === "context" || showAll ? <section className="lab-panel" aria-labelledby="files-title">
         <div className="lab-panel__bar"><span /><h3 id="files-title">{environmentCopy[environment].files}</h3></div>
-        <div className="workspace-terms"><span>画面に出てくる言葉：</span><GlossaryTerm term="folder" /><GlossaryTerm term="file" /></div>
         <div className="lab-files-row">
           <ContextTarget environment={environment} emit={emit} />
-          <button
-            className={`lab-file${opened ? " is-open" : ""}`}
-            onDoubleClick={() => { setOpened(true); emit("folder-double-opened", "青いフォルダーをダブルクリックで開きました。"); }}
-            type="button"
-          >
-            <span aria-hidden="true">📂</span>
-            写真
-          </button>
         </div>
+      </section> : null}
+
+      {missionId === "recovery" || showAll ? <section className="lab-panel" aria-labelledby="recovery-title">
+        <div className="lab-panel__bar"><span /><h3 id="recovery-title">ファイルを元に戻す練習</h3></div>
         <div className="recovery-tray">
           {!trashed ? (
             <button
@@ -142,7 +136,7 @@ export function MovementWorkspace({ environment, emit }: WorkspaceProps) {
           >🗑️ ゴミ箱</div>
         </div>
         {trashed ? <button className="lab-undo" type="button" onClick={() => { setTrashed(false); emit("action-undone", "町内会のお知らせ.txtファイルを元の場所へ戻しました。"); }}>↶ ファイルを元に戻す</button> : null}
-      </section>
+      </section> : null}
     </div>
   );
 }

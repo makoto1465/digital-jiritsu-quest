@@ -18,7 +18,10 @@ export function WelcomeExperience() {
   const completed = environment
     ? new Set(progress.completedMissionKeys.filter((key) => key.startsWith(`${environment}:`)).map((key) => key.split(":")[1]))
     : new Set<string>();
-  const nextMission = journeyMissions.find((mission) => !completed.has(mission.id)) ?? journeyMissions[0];
+  const started = environment
+    ? Object.values(progress.missionRecords).some((record) => record.environment === environment && record.attempts > 0)
+    : false;
+  const nextMission = journeyMissions.find((mission) => !completed.has(mission.id)) ?? journeyMissions[journeyMissions.length - 1];
 
   return (
     <div className={styles.page} aria-labelledby="welcome-title">
@@ -33,23 +36,30 @@ export function WelcomeExperience() {
           <div className={styles.savedArea} aria-label="学習の始め方">
             <p className={styles.currentDevice}>前回使った機器：<strong>{environmentLabels[environment]}</strong></p>
             <div className={styles.actionGrid}>
-              <Link className={styles.actionCard} href={`/mission/${environment}/${nextMission.id}`}>
-                <span className={styles.actionNumber}>1</span>
-                <span><strong>前回の続きから始める</strong><small>{nextMission.title}</small></span>
+              <Link className={`${styles.actionCard} ${styles.menuCard}`} href={completed.size ? `/journey/${environment}` : "/start"}>
+                <span className={styles.actionNumber}>選</span>
+                <span><strong>{completed.size ? "練習を選ぶ" : "最初から始める"}</strong><small>{completed.size ? "できた練習と次の練習を選べます" : "機器を選んで1-1から始めます"}</small></span>
                 <span aria-hidden="true">→</span>
               </Link>
-              <Link className={styles.actionCard} href={`/mission/${environment}/pointer`}>
-                <span className={styles.actionNumber}>1</span>
-                <span><strong>最初から始める</strong><small>「日付をクリックする」から練習します</small></span>
-                <span aria-hidden="true">→</span>
-              </Link>
+              {started || completed.size ? (
+                <Link className={`${styles.actionCard} ${styles.resumeCard}`} href={`/mission/${environment}/${nextMission.id}`}>
+                  <span className={styles.actionNumber}>続</span>
+                  <span><strong>前回の続きから始める</strong><small>{nextMission.title}</small></span>
+                  <span aria-hidden="true">→</span>
+                </Link>
+              ) : (
+                <div className={`${styles.actionCard} ${styles.disabledCard}`} aria-disabled="true">
+                  <span className={styles.actionNumber}>続</span>
+                  <span><strong>前回の続きはまだありません</strong><small>練習を始めると使えるようになります</small></span>
+                </div>
+              )}
             </div>
-            <Link className={styles.changeDevice} href="/start">使う機器を変える</Link>
+            {completed.size ? <Link className={styles.changeDevice} href="/start">使う機器を変える <span aria-hidden="true">→</span></Link> : null}
           </div>
         ) : (
           <div className={styles.firstArea}>
             <p>最初に、練習したい機器を選びます。</p>
-            <Link className={styles.startButton} href="/start">機器を選んで始める <span aria-hidden="true">→</span></Link>
+            <Link className={styles.startButton} href="/start">最初から始める <span aria-hidden="true">→</span></Link>
           </div>
         )}
       </section>

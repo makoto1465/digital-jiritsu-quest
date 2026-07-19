@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { GlossaryText } from "@/components/learning/GlossaryTerm";
 import { journeyMissions } from "@/content/journey";
 import type { JourneyEnvironment } from "@/features/progress/ProgressProvider";
 import {
@@ -24,6 +26,12 @@ interface ActionLog {
 }
 
 interface PracticalLabProps {
+  completion?: {
+    hintLevel: number;
+    menuHref: string;
+    nextHref: string;
+    nextLabel: string;
+  };
   environment: JourneyEnvironment;
   missionId?: string;
   onComplete?: (evidence: string[]) => void;
@@ -61,7 +69,7 @@ const workspaceComponents: Record<WorkspaceId, (props: WorkspaceProps) => React.
   independent: (props) => <IndependentWorkspace {...props} />,
 };
 
-export function PracticalLab({ environment, missionId = "pointer", onComplete, onAction, onRecovery, freePlay = false }: PracticalLabProps) {
+export function PracticalLab({ completion, environment, missionId = "pointer", onComplete, onAction, onRecovery, freePlay = false }: PracticalLabProps) {
   const challenge = missionChallenges[missionId] ?? missionChallenges.pointer;
   const mission = journeyMissions.find((item) => item.id === missionId);
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>(challenge.workspace);
@@ -70,7 +78,7 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
   const [showSuccess, setShowSuccess] = useState(false);
   const sequenceRef = useRef(0);
   const completionReported = useRef(false);
-  const completionButtonRef = useRef<HTMLButtonElement>(null);
+  const completionLinkRef = useRef<HTMLAnchorElement>(null);
   const eventIds = useMemo(() => actions.map((action) => action.eventId), [actions]);
   const evaluation = useMemo(() => evaluateChallenge(challenge, eventIds), [challenge, eventIds]);
   const successEvidence = useMemo(() => {
@@ -83,18 +91,15 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
   const displayedObjective = challenge.objective;
 
   useEffect(() => {
-    if (!freePlay && evaluation.complete && !completionReported.current) setShowSuccess(true);
-  }, [evaluation.complete, freePlay]);
-
-  useEffect(() => {
-    if (showSuccess) completionButtonRef.current?.focus();
-  }, [showSuccess]);
-
-  const confirmCompletion = () => {
-    if (completionReported.current) return;
+    if (freePlay || !evaluation.complete || completionReported.current) return;
     completionReported.current = true;
     onComplete?.(successEvidence);
-  };
+    setShowSuccess(true);
+  }, [evaluation.complete, freePlay, onComplete, successEvidence]);
+
+  useEffect(() => {
+    if (showSuccess) completionLinkRef.current?.focus();
+  }, [showSuccess]);
 
   const emit = (eventId: string, message: string) => {
     setActions((current) => {
@@ -115,7 +120,7 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
 
   const renderWorkspace = (workspace: WorkspaceId) => workspaceComponents[workspace]({
     environment,
-    missionId,
+    missionId: freePlay ? "free-play" : missionId,
     emit,
   });
 
@@ -138,7 +143,7 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
       ) : (
         <div className="lab-mission-strip">
           <span>やること</span>
-          <p>{displayedObjective}</p>
+          <p><GlossaryText text={displayedObjective} /></p>
           <div className="lab-state-meter" aria-label={`${evaluation.totalGroups}項目中${evaluation.completedGroups}項目の状態を確認`}>
             {challenge.required.map((_, index) => <span className={index < evaluation.completedGroups ? "is-done" : ""} key={index} />)}
           </div>
@@ -156,10 +161,21 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
             <p>正しく操作できました</p>
             <h2 id="lab-success-title">できました！</h2>
             <p>{mission?.afterCompletion ?? challenge.successNote}</p>
-            <div>
-              <button type="button" onClick={() => setShowSuccess(false)}>操作した画面を確認する</button>
-              <button ref={completionButtonRef} type="button" onClick={confirmCompletion}>できたことを記録して次へ</button>
+            <div className="lab-success__evidence">
+              <p>今回できたこと</p>
+              <dl>
+                <div><dt>練習した操作</dt><dd>{mission?.title ?? "操作練習"}</dd></div>
+                <div><dt>使ったヒント</dt><dd>{completion?.hintLevel ? `${completion.hintLevel}回` : "なし"}</dd></div>
+                <div><dt>確認できたこと</dt><dd>{successEvidence.length}件</dd></div>
+              </dl>
             </div>
+            {completion ? (
+              <nav className="lab-success__actions" aria-label="練習完了後の移動先">
+                <Link ref={completionLinkRef} className="is-primary" href={completion.nextHref}>{completion.nextLabel} <span aria-hidden="true">→</span></Link>
+                <Link href={completion.menuHref}>練習を選ぶ</Link>
+                <Link href="/">ホームへ戻る</Link>
+              </nav>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -167,10 +183,9 @@ export function PracticalLab({ environment, missionId = "pointer", onComplete, o
       <footer className="practical-lab__footer">
         <div className={`lab-feedback${evaluation.blocked ? " is-warning" : evaluation.complete ? " is-complete" : ""}`} aria-live="polite">
           <span aria-hidden="true">{evaluation.blocked ? "!" : evaluation.complete ? "✓" : actions.length ? "↳" : "○"}</span>
-          <p>{evaluation.blocked ? "確定する前に止める操作です。最初からやり直して、別の方法を試してください。" : evaluation.complete ? "できました。操作した画面を確認してから、次へ進めます。" : actions.at(-1)?.message ?? "上の『やること』を見て、画面の中を操作してください。"}</p>
+          <p>{evaluation.blocked ? "確定する前に止める操作です。最初からやり直して、別の方法を試してください。" : evaluation.complete ? "できました。上の画面から、次に進む場所を選べます。" : actions.at(-1)?.message ?? "上の『やること』を見て、画面の中を操作してください。"}</p>
         </div>
         <div className="lab-recovery-actions">
-          {evaluation.complete && !showSuccess ? <button className="lab-success-again" type="button" onClick={() => setShowSuccess(true)}>できたことを確認する</button> : null}
           <button type="button" onClick={reset}>↶ この練習を最初からやり直す</button>
         </div>
         <details className="action-history">
