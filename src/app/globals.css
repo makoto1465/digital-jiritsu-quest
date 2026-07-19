@@ -905,7 +905,7 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .practice-device-frame--iphone .practice-app-icon,.practice-device-frame--android .practice-app-icon { background: transparent; color: #161d27; }
 .mobile-home-indicator { position: absolute; bottom: 11px; left: 50%; width: 100px; height: 5px; transform: translateX(-50%); border-radius: 999px; background: #fff; }
 
-/* WindowsではMac風の信号ボタンを使わない */
+/* WindowsではWindows用のタイトルバー操作を表示する */
 .practical-lab--windows .lab-panel__bar > span { width: 19px; height: 19px; margin-right: 0; border-radius: 4px; background: linear-gradient(135deg,#f5c642,#e69a00); box-shadow: none; }
 .practical-lab--windows .lab-panel__bar > span::after { content: ""; display: block; width: 10px; height: 7px; margin: 7px auto 0; border-radius: 1px; background: #fff4bd; }
 
