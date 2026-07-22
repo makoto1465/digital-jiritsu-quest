@@ -293,7 +293,19 @@ export function TextWorkspace({ emit, missionId }: WorkspaceProps) {
           <textarea id="source-text" className="selection-source" readOnly value={source} onCopy={handleCopy} onSelect={(event) => inspectSelection(event.currentTarget)} />
           <p className="field-help">マウスならドラッグ、スマートフォンなら長押し後の選択範囲を使います。</p></> : null}
         {showTyping ? <><label className="field-label" htmlFor="target-typing">予定の検索</label>
-          <input id="target-typing" value={typing} onChange={(event) => { setTyping(event.target.value); if (event.target.value.trim() === "夏祭り 10時") emit("target-typed", "必要な文字を正しく入力しました。"); }} placeholder="ここへ入力" /></> : null}
+          <input
+            id="target-typing"
+            value={typing}
+            onFocus={() => emit("typing-field-focused", "文字を入れる場所を選びました。")}
+            onChange={(event) => {
+              const value = event.target.value;
+              const valueWithoutSpaces = value.replace(/\s/g, "");
+              setTyping(value);
+              if (valueWithoutSpaces.includes("夏祭り")) emit("festival-typed", "『夏祭り』と入力しました。");
+              if (valueWithoutSpaces === "夏祭り10時") emit("target-typed", "『夏祭り10時』と入力できました。");
+            }}
+            placeholder="ここへ入力"
+          /></> : null}
       </section> : null}
       {showEditor ? <section className="lab-panel note-editor">
         <div className="lab-panel__bar"><span /><h3>自分のメモ</h3><small>画面上のボタンで操作します</small></div>

@@ -260,7 +260,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .practical-lab__header p { margin: 0; color: #bdc9dc; font-size: .72rem; }
 .practical-lab__header strong { font-size: .95rem; }
 .live-dot { width: 8px; height: 8px; display: inline-block; margin-right: 5px; border-radius: 50%; background: #48d6ba; box-shadow: 0 0 0 4px rgba(72,214,186,.17); }
-.lab-mission-strip { display: grid; grid-template-columns: 125px minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 13px 22px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.lab-mission-strip { position: relative; z-index: 200; display: grid; grid-template-columns: 125px minmax(0,1fr) auto; align-items: center; gap: 12px; overflow: visible; padding: 13px 22px; border-bottom: 1px solid var(--line); background: var(--surface); }
 .lab-mission-strip > span { color: var(--teal); font-size: .72rem; font-weight: 700; }
 .lab-mission-strip > p { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.55; animation: lab-instruction-in .22s ease-out both; }
 .lab-step-count { min-width: 42px; color: var(--ink-soft); font-size: .75rem; text-align: right; }

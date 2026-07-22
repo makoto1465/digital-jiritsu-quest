@@ -65,7 +65,7 @@ export const missionChallenges: Record<string, MissionChallenge> = {
     { windows: [["browser-opened"], ["window-maximized"], ["window-restored-down"], ["window-moved"]] },
   ),
 
-  typing: challenge("text", "『予定の検索』の入力欄を{{activate}}し、キーボードで『夏祭り 10時』と入力してください。", "入力位置を確かめ、必要な文字を入力できました。", [["target-typed"]]),
+  typing: challenge("text", "『予定の検索』の入力欄を選び、『夏祭り10時』と入力してください。空白は入れても入れなくても正解です。", "入力位置を確かめ、必要な文字を入力できました。", [["typing-field-focused"], ["festival-typed"], ["target-typed"]]),
   "text-selection": challenge("text", "文章の『青いタオル』だけを{{selectText}}、選択範囲を確認してください。", "必要な範囲だけを選択できました。", [["text-selected"]]),
   "copy-paste": challenge("text", "『集合場所：中央公民館』を{{selectText}}、『コピー』を{{activate}}します。メモ欄を{{context}}し、『貼り付け』を{{activate}}してください。", "コピー元を残したまま、内容を別の場所で使えました。", [["text-copied"], ["text-pasted"]]),
   "edit-undo": challenge("text", "メモ欄を{{activate}}して文字を追加し、画面下の『取り消し』を{{activate}}してください。", "編集結果を観察し、画面上の操作で取り消せました。", [["text-edited"], ["text-undone"]]),
@@ -168,7 +168,13 @@ const missionStepInstructions: Record<string, StepInstructionSet> = {
       "上部の白い帯（タイトルバー）を左へドラッグしてください。",
     ],
   },
-  typing: { default: ["入力欄を{{activate}}し、『夏祭り 10時』と入力してください。"] },
+  typing: {
+    default: [
+      "『予定の検索』の入力欄を{{activate}}してください。",
+      "『夏祭り』と入力してください。",
+      "続けて『10時』と入力してください。空白（スペース）は入れても、入れなくても正解です。",
+    ],
+  },
   "text-selection": { default: ["文章の『青いタオル』だけを{{selectText}}ください。"] },
   "copy-paste": { default: ["『集合場所：中央公民館』を選択し、『コピー』を{{activate}}してください。", "メモ欄を{{context}}し、『貼り付け』を{{activate}}してください。"] },
   "edit-undo": { default: ["メモ欄へ文字を追加してください。", "画面下の『取り消し』を{{activate}}してください。"] },
