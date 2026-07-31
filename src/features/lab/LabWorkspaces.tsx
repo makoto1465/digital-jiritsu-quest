@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type ClipboardEvent } from "react";
 
-import { WindowsDesktopWorkspace } from "@/features/lab/WindowsDesktopWorkspace";
+import { AppIcon } from "@/features/os/OsIcons";
+import { appLabel } from "@/features/os/os-config";
+import { OsShell } from "@/features/os/OsShell";
 import type { JourneyEnvironment } from "@/features/progress/ProgressProvider";
 
 export interface WorkspaceProps {
@@ -66,6 +68,9 @@ function CopyPastePractice({ environment, emit }: Pick<WorkspaceProps, "environm
   const [note, setNote] = useState("");
   const [menu, setMenu] = useState<"source" | "note" | null>(null);
 
+  const notesApp = appLabel(environment, "notes");
+  const extension = environment === "mac" ? "rtf" : "txt";
+
   function inspectSelection(target: HTMLTextAreaElement) {
     setSelectedCorrectly(target.value.slice(target.selectionStart, target.selectionEnd) === copiedText);
   }
@@ -73,9 +78,9 @@ function CopyPastePractice({ environment, emit }: Pick<WorkspaceProps, "environm
   return (
     <div className={`copy-practice copy-practice--${environment}`}>
       {environment === "windows" ? <div className="copy-desktop-icons" aria-hidden="true"><span>🗑️<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
-      <section className="notepad-window" aria-label="見本文が開かれたメモ帳">
-        <header><span className="notepad-icon" aria-hidden="true">▤</span><strong>夏祭りのご案内.txt - メモ帳</strong><span className="window-controls" aria-hidden="true">—　□　×</span></header>
-        <nav aria-label="メモ帳のメニュー"><span>ファイル</span><span>編集</span><span>表示</span></nav>
+      <section className="notepad-window" aria-label={`見本文が開かれた${notesApp}`}>
+        <header><AppIcon os={environment} app="notes" size={18} /><strong>夏祭りのご案内.{extension} - {notesApp}</strong><span className="window-controls" aria-hidden="true">—　□　×</span></header>
+        <nav aria-label={`${notesApp}のメニュー`}><span>ファイル</span><span>編集</span><span>表示</span></nav>
         <textarea
           aria-label="コピー元の見本文"
           onContextMenu={(event) => { event.preventDefault(); const selected = event.currentTarget.value.slice(event.currentTarget.selectionStart, event.currentTarget.selectionEnd) === copiedText; setSelectedCorrectly(selected); if (selected) setMenu("source"); }}
@@ -87,9 +92,9 @@ function CopyPastePractice({ environment, emit }: Pick<WorkspaceProps, "environm
         {menu === "source" ? <div className="native-context-menu"><button type="button" onClick={() => { setCopied(true); setMenu(null); emit("text-copied", "『集合場所：中央公民館』をコピーしました。"); }}>コピー</button></div> : null}
       </section>
 
-      <section className="notepad-window" aria-label="貼り付け先のメモ帳">
-        <header><span className="notepad-icon" aria-hidden="true">▤</span><strong>自分のメモ.txt - メモ帳</strong><span className="window-controls" aria-hidden="true">—　□　×</span></header>
-        <nav aria-label="メモ帳のメニュー"><span>ファイル</span><span>編集</span><span>表示</span></nav>
+      <section className="notepad-window" aria-label={`貼り付け先の${notesApp}`}>
+        <header><AppIcon os={environment} app="notes" size={18} /><strong>自分のメモ.{extension} - {notesApp}</strong><span className="window-controls" aria-hidden="true">—　□　×</span></header>
+        <nav aria-label={`${notesApp}のメニュー`}><span>ファイル</span><span>編集</span><span>表示</span></nav>
         <textarea
           aria-label="貼り付け先のメモ欄"
           onContextMenu={(event) => { event.preventDefault(); setMenu("note"); }}
@@ -155,113 +160,11 @@ export function MovementWorkspace({ environment, emit, missionId }: WorkspacePro
   );
 }
 
-export function ScreensWorkspace(props: WorkspaceProps) {
-  return props.environment === "windows" ? <WindowsDesktopWorkspace {...props} /> : <LegacyScreensWorkspace {...props} />;
+/** 画面とアプリの行き来は、4環境とも実機に近いOS再現シェルで練習する。 */
+export function ScreensWorkspace({ environment, emit }: WorkspaceProps) {
+  return <OsShell os={environment} mode="mission" emit={emit} />;
 }
 
-function LegacyScreensWorkspace({ environment, emit }: WorkspaceProps) {
-  type ScreenApp = "browser" | "notes" | "camera" | "phone";
-  type Screen = ScreenApp | "home";
-  const appLabel: Record<ScreenApp, string> = {
-    browser: "ブラウザ",
-    notes: "メモ",
-    camera: "カメラ",
-    phone: "電話",
-  };
-  const [openApps, setOpenApps] = useState<ScreenApp[]>([]);
-  const [activeApp, setActiveApp] = useState<Screen>("home");
-  const [browserPage, setBrowserPage] = useState<"search" | "facility">("search");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [closedNotes, setClosedNotes] = useState(false);
-  const [photoTaken, setPhotoTaken] = useState(false);
-  const [calling, setCalling] = useState(false);
-  const screenRef = useRef<HTMLDivElement>(null);
-  const screenMountedRef = useRef(false);
-
-  useEffect(() => {
-    if (!screenMountedRef.current) {
-      screenMountedRef.current = true;
-      return;
-    }
-    screenRef.current?.focus();
-  }, [activeApp, browserPage]);
-
-  const openApp = (app: ScreenApp) => {
-    const alreadyOpen = openApps.includes(app);
-    const next = alreadyOpen ? openApps : [...openApps, app];
-    setOpenApps(next);
-    setActiveApp(app);
-    if (app === "notes") {
-      emit(closedNotes ? "app-reopened" : "notes-opened", closedNotes ? "メモをもう一度開きました。" : "メモを開きました。");
-    }
-    if (app === "camera") emit("camera-opened", "カメラを開きました。写る範囲を確認できます。");
-    if (app === "phone") emit("phone-opened", "電話を開きました。発信前に相手を確認できます。");
-    if (next.includes("browser") && next.includes("notes")) emit("two-apps-open", "ブラウザとメモが、どちらも開いたままです。");
-  };
-
-  const switchApp = (app: ScreenApp) => {
-    if (app !== activeApp) emit("app-switched", `${appLabel[app]}へ切り替えました。`);
-    setActiveApp(app);
-  };
-
-  const handleShortcut = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Tab" && (event.altKey || event.metaKey)) {
-      event.preventDefault();
-      if (openApps.length >= 2) switchApp(activeApp === openApps[0] ? openApps[1] : openApps[0]);
-    }
-  };
-
-  return (
-    <div className={`device-stage device-stage--${environment}`} tabIndex={0} onKeyDown={handleShortcut}>
-      <div className="device-stage__topbar">
-        <span>{environment === "windows" ? "デスクトップ" : environment === "mac" ? "Finder　 ファイル　 編集" : "11:24　●●●"}</span>
-        <button type="button" aria-expanded={menuOpen} onClick={() => { setMenuOpen((value) => !value); emit("menu-opened", "画面のメニューを開きました。"); }}>⋯ <span className="sr-only">メニュー</span></button>
-        {menuOpen ? <div className="lab-menu lab-menu--top" role="group" aria-label="画面のメニュー"><button type="button" onClick={() => { emit("display-opened", "表示の設定を開きました。"); setMenuOpen(false); }}>表示</button><button type="button">ヘルプ</button></div> : null}
-      </div>
-
-      <div className="device-stage__screen" ref={screenRef} tabIndex={-1}>
-        {activeApp === "home" ? (
-          <div className="app-launcher">
-            <p>{environment === "windows" ? "開くアプリを左クリックしてください" : environment === "mac" ? "開くアプリをクリックしてください" : "開くアプリをタップしてください"}</p>
-            <div><button type="button" onClick={() => openApp("browser")}><span>🌐</span>ブラウザ</button><button type="button" onClick={() => openApp("notes")}><span>📝</span>メモ</button>{environment === "iphone" || environment === "android" ? <><button type="button" onClick={() => openApp("camera")}><span>📷</span>カメラ</button><button type="button" onClick={() => openApp("phone")}><span>☎</span>電話</button></> : null}</div>
-          </div>
-        ) : null}
-        {activeApp === "browser" ? (
-          <section className="fake-window" tabIndex={-1} aria-label="ブラウザ">
-            <header><button disabled={browserPage === "search"} type="button" onClick={() => { setBrowserPage("search"); emit("went-back", "ひとつ前の検索画面へ戻りました。"); }}>← 戻る</button><strong>ブラウザ</strong><button type="button" onClick={() => { setOpenApps((apps) => apps.filter((app) => app !== "browser")); setActiveApp("home"); }}>閉じる</button></header>
-            {browserPage === "search" ? <div className="fake-page"><p>検索結果</p><button className="fake-result" type="button" onClick={() => { setBrowserPage("facility"); emit("page-opened", "施設案内のページを開きました。"); }}>中央公民館｜施設案内 <small>開館時間と場所</small></button></div> : <div className="fake-page"><p className="fake-site-label">みどり市 公式</p><h3>中央公民館 施設案内</h3><p>開館：午前9時〜午後8時</p></div>}
-          </section>
-        ) : null}
-        {activeApp === "notes" ? (
-          <section className="fake-window" tabIndex={-1} aria-label="メモ">
-            <header><strong>メモ</strong><button type="button" onClick={() => { setClosedNotes(true); setOpenApps((apps) => apps.filter((app) => app !== "notes")); setActiveApp("home"); emit("window-closed", "メモの画面を閉じました。内容は残っています。"); }}>閉じる</button></header>
-            <textarea aria-label="練習メモ" defaultValue="中央公民館へ確認する" />
-          </section>
-        ) : null}
-        {activeApp === "camera" ? (
-          <section className="fake-window camera-practice" tabIndex={-1} aria-label="カメラ">
-            <header><strong>カメラ</strong><button type="button" onClick={() => setActiveApp("home")}>ホームへ</button></header>
-            <div className={photoTaken ? "camera-preview has-photo" : "camera-preview"}><span>{photoTaken ? "夏祭りのポスター" : "撮る前に、画面の四隅まで確認"}</span></div>
-            <button className="camera-shutter" type="button" onClick={() => { setPhotoTaken((value) => !value); emit(photoTaken ? "camera-retaken" : "camera-taken", photoTaken ? "写真を撮り直せる状態へ戻しました。" : "写る範囲を確認して練習写真を撮りました。"); }}>{photoTaken ? "↶ 撮り直す" : "● 撮影"}</button>
-          </section>
-        ) : null}
-        {activeApp === "phone" ? (
-          <section className="fake-window phone-practice" tabIndex={-1} aria-label="電話">
-            <header><strong>電話</strong><button type="button" onClick={() => setActiveApp("home")}>ホームへ</button></header>
-            <div><span className="contact-avatar">公</span><h3>中央公民館</h3><p>000-1234-5678（練習用）</p>{calling ? <p className="call-status">通話中：外部にはつながっていません</p> : <p>相手と番号を確認してから発信します</p>}</div>
-            <button className={calling ? "hangup-button" : "call-button"} type="button" onClick={() => { setCalling((value) => !value); emit(calling ? "call-ended" : "call-started", calling ? "練習通話を終了しました。" : "相手を確認して練習通話を始めました。"); }}>{calling ? "通話を終了" : "発信する"}</button>
-          </section>
-        ) : null}
-      </div>
-
-      <nav className="device-stage__switcher" aria-label={`${environmentCopy[environment].home}と開いているアプリ`}>
-        <button type="button" aria-pressed={activeApp === "home"} onClick={() => setActiveApp("home")}>{environmentCopy[environment].home}</button>
-        {openApps.map((app) => <button type="button" aria-pressed={activeApp === app} onClick={() => switchApp(app)} key={app}>{app === "browser" ? "🌐 ブラウザ" : app === "notes" ? "📝 メモ" : app === "camera" ? "📷 カメラ" : "☎ 電話"}</button>)}
-      </nav>
-      <p className="device-stage__shortcut">{environment === "windows" ? "画面下のアプリ名を左クリックすると、開いた画面を切り替えられます。" : environment === "mac" ? "画面下のアプリ名をクリックすると、開いた画面を切り替えられます。" : "画面下からスワイプすると、開いたアプリを切り替えられます。"}</p>
-    </div>
-  );
-}
 
 export function TextWorkspace({ emit, missionId }: WorkspaceProps) {
   const source = "集合場所：中央公民館　持ち物：青いタオル　開始：午前10時";

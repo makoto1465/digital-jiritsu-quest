@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { useProgress, type JourneyEnvironment } from "@/features/progress/ProgressProvider";
@@ -37,6 +38,7 @@ export function StartExperience() {
           ))}
         </div>
         <p className={styles.help}><strong>どれか分からないとき：</strong>スマートフォンの背面にAppleのマークがあればiPhoneです。それ以外はAndroidを選んでください。</p>
+        <p className={styles.help}><strong>課題なしで触りたいとき：</strong><Link href="/free-play">フリープレイ（自由に触る）</Link>では、4つの機器の本物そっくりな画面を、好きなだけ試せます。</p>
       </section>
     </div>
   );

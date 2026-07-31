@@ -18,6 +18,8 @@ import {
   type WorkspaceProps,
 } from "@/features/lab/LabWorkspaces";
 import { evaluateChallenge, getChallengeRequirements, getChallengeStepInstructions, missionChallenges, type WorkspaceId } from "@/features/lab/mission-challenges";
+import { AppIcon, SystemGlyph } from "@/features/os/OsIcons";
+import { appLabel, osMeta, type AppKey } from "@/features/os/os-config";
 import { getMissionCompletionText, getMissionTitle } from "@/lib/journey-copy";
 
 interface ActionLog {
@@ -74,22 +76,25 @@ const workspaceComponents: Record<WorkspaceId, (props: WorkspaceProps) => React.
   independent: (props) => <IndependentWorkspace {...props} />,
 };
 
+/** ウィンドウのタイトルには、その機器で実際に表示されるアプリ名を出す */
 function practiceAppName(workspace: WorkspaceId, missionId: string, environment: JourneyEnvironment) {
-  if (workspace === "web") return "インターネットブラウザ";
-  if (missionId === "attach-review") return "メール";
-  if (workspace === "files" || missionId === "context") return environment === "windows" ? "エクスプローラー" : "ファイル";
-  if (missionId === "typing") return "カレンダー";
-  if (workspace === "text" || missionId === "recovery") return "メモ帳";
   if (workspace === "screens") return environment === "windows" ? "Windows 11 デスクトップ" : `${environmentNames[environment]} ホーム`;
-  if (missionId === "permission-decision") return "設定";
-  if (missionId === "account-recovery") return "Microsoft アカウント";
+  if (missionId === "typing" || missionId === "pointer") return "カレンダー";
   if (missionId === "form-review") return "参加申込フォーム";
-  if (missionId === "suspicious-message") return "メール";
-  if (workspace === "safety") return "設定";
-  if (missionId === "wifi-recovery") return "ネットワークとインターネット";
-  if (missionId === "help-search") return "インターネットブラウザ";
-  if (workspace === "recovery") return "設定";
-  return missionId === "scroll" ? "インターネットブラウザ" : "カレンダー";
+  if (missionId === "account-recovery") return environment === "windows" ? "Microsoft アカウント" : environment === "android" ? "Google アカウント" : "Apple ID";
+  if (missionId === "wifi-recovery") return environment === "windows" ? "ネットワークとインターネット" : appLabel(environment, "settings");
+  return appLabel(environment, practiceAppKey(workspace, missionId));
+}
+
+/** 練習中のウィンドウに、実機と同じアプリアイコンを出す */
+function practiceAppKey(workspace: WorkspaceId, missionId: string): AppKey {
+  if (workspace === "web" || missionId === "scroll" || missionId === "help-search") return "browser";
+  if (missionId === "attach-review" || missionId === "suspicious-message") return "mail";
+  if (workspace === "files" || missionId === "context") return "files";
+  if (missionId === "typing" || missionId === "pointer") return "clock";
+  if (workspace === "text" || missionId === "recovery") return "notes";
+  if (workspace === "safety" || workspace === "recovery") return "settings";
+  return "clock";
 }
 
 export function PracticalLab({ completion, environment, missionId = "pointer", onComplete, onAction, onRecovery, freePlay = false }: PracticalLabProps) {
@@ -125,6 +130,8 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
   const currentInstruction = stepInstructions[Math.min(currentStepIndex, stepInstructions.length - 1)];
   const workspaceOwnsDeviceScreen = activeWorkspace === "screens" || (environment === "windows" && missionId === "recovery");
   const currentAppName = practiceAppName(activeWorkspace, missionId, environment);
+  const currentAppKey = practiceAppKey(activeWorkspace, missionId);
+  const isMobile = environment === "iphone" || environment === "android";
 
   const animateAppWindow = (animation: AppWindowAnimation, onFinish?: () => void) => {
     if (appWindowAnimationTimerRef.current) clearTimeout(appWindowAnimationTimerRef.current);
@@ -280,20 +287,42 @@ export function PracticalLab({ completion, environment, missionId = "pointer", o
       <div className={`practice-device-frame practice-device-frame--${environment}${workspaceOwnsDeviceScreen ? " is-device-desktop" : ""}`} key={`${activeWorkspace}-${sessionKey}`}>
         {workspaceOwnsDeviceScreen ? renderWorkspace(activeWorkspace) : <>
           {environment === "windows" ? <div className="windows-desktop-icons" aria-hidden="true"><span>🗑<small>ごみ箱</small></span><span>📁<small>資料</small></span></div> : null}
+          {environment === "mac" ? (
+            <div className="practice-mac-menubar" aria-hidden="true">
+              <span className="practice-mac-apple">{SystemGlyph.appleLogo}</span>
+              <strong>{currentAppName}</strong>
+              <span>ファイル</span><span>編集</span><span>表示</span><span>ウインドウ</span><span>ヘルプ</span>
+              <time>{osMeta.mac.date} {osMeta.mac.clock}</time>
+            </div>
+          ) : null}
           {appWindowMode !== "closed" && appWindowMode !== "minimized" ? <div className={`practice-app-window is-${appWindowMode}${appWindowAnimation ? ` is-${appWindowAnimation}` : ""}`} style={appWindowMode === "normal" ? { transform: `translate(${appWindowPosition.x}px, ${appWindowPosition.y}px)` } : undefined}>
+            {isMobile ? (
+              <div className="practice-mobile-status" aria-hidden="true">
+                <span>{osMeta[environment].clock}</span>
+                <span>{SystemGlyph.cellular}{SystemGlyph.wifi}{SystemGlyph.battery}</span>
+              </div>
+            ) : null}
             <div className="practice-app-window__titlebar" onPointerDown={beginAppWindowDrag} onPointerMove={dragAppWindow} onPointerUp={endAppWindowDrag}>
-              {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <span className="practice-app-icon" aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "🌐" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span>}
+              {environment === "mac" ? <span className="mac-title-dots" aria-hidden="true" /> : <AppIcon os={environment} app={currentAppKey} size={20} />}
               <strong>{currentAppName}</strong>
               {environment === "windows" ? <div className="practice-window-controls">
                 <button type="button" aria-label={`${currentAppName}の「―（最小化）」ボタン`} title="―（最小化）" onClick={minimizeAppWindow}>―</button>
                 <button type="button" aria-label={appWindowMode === "maximized" ? `${currentAppName}の「❐（元のサイズに戻す）」ボタン` : `${currentAppName}の「□（最大化）」ボタン`} title={appWindowMode === "maximized" ? "❐（元のサイズに戻す）" : "□（最大化）"} onClick={toggleAppWindowMaximize}>{appWindowMode === "maximized" ? "❐" : "□"}</button>
                 <button className="is-close" type="button" aria-label={`${currentAppName}の「×（閉じる）」ボタン`} title="×（閉じる）" onClick={closeAppWindow}>×</button>
-              </div> : environment === "iphone" || environment === "android" ? <span className="mobile-status-icons" aria-hidden="true">11:24　●●●</span> : null}
+              </div> : null}
             </div>
             {activeWorkspace === "movement" && missionId === "scroll" ? <div className="practice-browser-toolbar" aria-hidden="true"><span>←</span><span>↻</span><div>🔒 https://www.midori-city.example/event/summer</div><span>…</span></div> : null}
             <div className="practical-lab__body">{renderWorkspace(activeWorkspace)}</div>
+            {environment === "iphone" ? <div className="practice-ios-indicator" aria-hidden="true"><span /></div> : null}
+            {environment === "android" ? (
+              <div className="practice-android-nav" aria-hidden="true">
+                <span>{SystemGlyph.androidBack}</span><span>{SystemGlyph.androidHome}</span><span>{SystemGlyph.androidRecents}</span>
+              </div>
+            ) : null}
           </div> : null}
-          {environment === "windows" ? <div className="windows-taskbar"><span className="windows-start" aria-hidden="true">⊞</span><span aria-hidden="true">⌕</span><span aria-hidden="true">▰</span><button className={appWindowMode !== "closed" ? "is-open" : ""} aria-pressed={appWindowMode === "normal" || appWindowMode === "maximized"} type="button" aria-label={appWindowMode === "closed" ? `${currentAppName}を開く` : appWindowMode === "minimized" ? `${currentAppName}を最小化前の大きさで表示` : `${currentAppName}を最小化`} onClick={activateTaskbarAppWindow}><span aria-hidden="true">{activeWorkspace === "web" || missionId === "scroll" ? "🌐" : activeWorkspace === "files" || missionId === "context" ? "▰" : "▤"}</span></button><time>11:24</time></div> : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><span>⌘</span><span>🌐</span><span>📁</span></div> : <div className="mobile-home-indicator" aria-hidden="true" />}
+          {environment === "windows" ? <div className="windows-taskbar"><span className="windows-start" aria-hidden="true">{SystemGlyph.windowsLogo}</span><span aria-hidden="true">{SystemGlyph.search}</span><button className={appWindowMode !== "closed" ? "is-open" : ""} aria-pressed={appWindowMode === "normal" || appWindowMode === "maximized"} type="button" aria-label={appWindowMode === "closed" ? `${currentAppName}を開く` : appWindowMode === "minimized" ? `${currentAppName}を最小化前の大きさで表示` : `${currentAppName}を最小化`} onClick={activateTaskbarAppWindow}><AppIcon os="windows" app={currentAppKey} size={24} /></button><time>{osMeta.windows.clock}</time></div>
+            : environment === "mac" ? <div className="mac-dock" aria-hidden="true"><AppIcon os="mac" app="browser" size={34} /><AppIcon os="mac" app="files" size={34} /><AppIcon os="mac" app={currentAppKey} size={34} /></div>
+            : null}
         </>}
       </div>
 

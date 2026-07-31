@@ -3,6 +3,7 @@ import { AppFooter } from "@/components/layout/AppFooter";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
+import "@/features/os/os-shell.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://digital-jiritsu-quest.vercel.app"),

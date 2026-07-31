@@ -49,11 +49,21 @@ export function WelcomeExperience() {
                 </div>
               )}
             </div>
+            <Link className={styles.freeCard} href="/free-play">
+              <span className={styles.actionNumber}>自</span>
+              <span><strong>自由に触ってみる（フリープレイ）</strong><small>課題なし。Windows・Mac・iPhone・Android の本物そっくりな画面を、好きなだけ試せます</small></span>
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         ) : (
           <div className={styles.firstArea}>
-            <p>最初に、練習したい機器を選びます。</p>
+            <p>最初に、どちらかを選びます。</p>
             <Link className={styles.startButton} href="/start">練習を始める <span aria-hidden="true">→</span></Link>
+            <Link className={styles.freeCard} href="/free-play">
+              <span className={styles.actionNumber}>自</span>
+              <span><strong>まず自由に触ってみる（フリープレイ）</strong><small>課題なし。Windows・Mac・iPhone・Android の本物そっくりな画面を、好きなだけ試せます</small></span>
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         )}
       </section>

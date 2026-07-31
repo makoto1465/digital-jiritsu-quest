@@ -767,7 +767,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .mission-intro__actions > a:first-child { font-weight: 700; }
 
 .practical-lab { position: relative; }
-.lab-success { position: absolute; z-index: 30; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(10, 29, 35, .72); animation: success-backdrop .35s ease-out both; }
+.lab-success { position: absolute; z-index: 200; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(10, 29, 35, .72); animation: success-backdrop .35s ease-out both; }
 .lab-success__card { width: min(100%, 560px); padding: clamp(24px, 5vw, 42px); border: 4px solid #78d5bd; border-radius: 24px; background: white; box-shadow: 0 25px 80px rgba(0,0,0,.28); text-align: center; animation: success-card .6s cubic-bezier(.2,.9,.25,1.2) both; }
 .lab-success__mark { width: 96px; height: 96px; display: grid; place-items: center; margin: 0 auto 17px; border-radius: 50%; background: var(--teal-pale); box-shadow: 0 0 0 12px rgba(79, 209, 187, .2); animation: success-pulse 1.1s ease-out .2s both; }
 .lab-success__mark span { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; background: var(--teal); color: white; font-size: 2.2rem; font-weight: 900; }
@@ -919,6 +919,35 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 .practice-device-frame--iphone .practice-app-icon,.practice-device-frame--android .practice-app-icon { background: transparent; color: #161d27; }
 .mobile-home-indicator { position: absolute; bottom: 11px; left: 50%; width: 100px; height: 5px; transform: translateX(-50%); border-radius: 999px; background: #fff; }
 
+/* 実機に合わせたミッション画面のOSクローム */
+.practice-mac-menubar { position: absolute; z-index: 5; inset: 0 0 auto; height: 26px; display: flex; align-items: center; gap: 15px; padding: 0 12px; background: rgba(250,250,252,.62); backdrop-filter: blur(20px) saturate(180%); color: #16171a; font-family: -apple-system,"SF Pro Text","Hiragino Sans",sans-serif; font-size: .68rem; }
+.practice-mac-menubar strong { font-weight: 800; }
+.practice-mac-apple { display: inline-grid; place-items: center; }
+.practice-mac-apple svg { width: 14px; height: 14px; }
+.practice-mac-menubar time { margin-left: auto; font-variant-numeric: tabular-nums; }
+.practice-device-frame--mac { padding-top: 46px; }
+.practice-mobile-status { display: flex; align-items: center; justify-content: space-between; height: 34px; padding: 0 20px; background: #fff; color: #101418; font-size: .72rem; font-weight: 700; }
+.practice-mobile-status > span:last-child { display: inline-flex; align-items: center; gap: 5px; }
+.practice-mobile-status svg { height: 11px; width: auto; }
+.practice-ios-indicator { height: 22px; display: grid; place-items: center; background: #fff; }
+.practice-ios-indicator span { width: 118px; height: 5px; border-radius: 3px; background: #c4c8ce; }
+.practice-android-nav { height: 40px; display: flex; align-items: center; justify-content: space-around; background: #f6f8fb; color: #3c4652; }
+.practice-android-nav svg { width: 16px; height: 16px; }
+.practice-device-frame--iphone, .practice-device-frame--android { padding-bottom: 22px; }
+.practice-device-frame--iphone .practice-app-window, .practice-device-frame--android .practice-app-window { overflow: hidden; }
+.windows-taskbar span svg, .windows-taskbar .windows-start svg { width: 19px; height: 19px; }
+.mac-dock { align-items: flex-end; }
+
+/* スマートフォンの画面は、実機と同じく縦に積む */
+.practical-lab--iphone .text-workbench, .practical-lab--android .text-workbench,
+.practical-lab--iphone .files-workbench, .practical-lab--android .files-workbench,
+.practical-lab--iphone .copy-practice, .practical-lab--android .copy-practice,
+.practical-lab--iphone .lab-workspace-grid, .practical-lab--android .lab-workspace-grid { grid-template-columns: minmax(0, 1fr); }
+
+/* スマートフォンにはウィンドウの信号機ボタンが無いので出さない */
+.practical-lab--iphone .lab-panel__bar > span, .practical-lab--android .lab-panel__bar > span { display: none; }
+.practical-lab--iphone .lab-panel__bar, .practical-lab--android .lab-panel__bar { border-radius: 0; background: #fff; }
+
 /* WindowsではWindows用のタイトルバー操作を表示する */
 .practical-lab--windows .lab-panel__bar > span { width: 19px; height: 19px; margin-right: 0; border-radius: 4px; background: linear-gradient(135deg,#f5c642,#e69a00); box-shadow: none; }
 .practical-lab--windows .lab-panel__bar > span::after { content: ""; display: block; width: 10px; height: 7px; margin: 7px auto 0; border-radius: 1px; background: #fff4bd; }
@@ -977,6 +1006,8 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
 
 /* 画面とアプリ練習は単一のWindows 11デスクトップで行う */
 .practice-device-frame.is-device-desktop { min-height: 620px; padding: 0; background: #087cc3; border-radius: 0 0 14px 14px; }
+.practice-device-frame.is-device-desktop .os-shell { --os-shell-height: 620px; border-radius: 0 0 14px 14px; }
+.practice-device-frame.is-device-desktop.practice-device-frame--mac { padding-top: 0; }
 .win11-desktop { position: relative; width: 100%; height: 620px; overflow: hidden; background: #087cc3; color: #111827; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; user-select: none; }
 .win11-wallpaper { position: absolute; inset: 0 0 48px; background: radial-gradient(circle at 71% 24%, rgba(123,224,255,.95), transparent 22%), radial-gradient(circle at 58% 58%, rgba(33,168,222,.62), transparent 36%), linear-gradient(135deg,#075da6 0%,#118cc9 47%,#0a6db1 100%); }
 .win11-wallpaper::after { content: ""; position: absolute; width: 310px; height: 310px; right: 15%; top: 9%; border: 24px solid rgba(158,232,255,.24); border-radius: 18% 55% 20% 48%; transform: rotate(-12deg); filter: blur(2px); }
@@ -1077,6 +1108,7 @@ html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, ht
   .lab-success__actions { grid-template-columns: 1fr; }
   .practice-device-frame { min-height: 500px; padding: 15px 9px 55px; }
   .practice-device-frame.is-device-desktop { min-height: 560px; padding: 0; }
+  .practice-device-frame.is-device-desktop .os-shell { --os-shell-height: 560px; }
   .win11-desktop { height: 560px; }
   .win11-window.is-normal { min-width: 0; width: calc(100% - 32px); height: 66%; }
   .win11-window--notepad.is-normal { width: calc(100% - 42px); }
