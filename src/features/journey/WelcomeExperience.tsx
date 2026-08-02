@@ -58,7 +58,7 @@ export function WelcomeExperience() {
               <span className={styles.actionNumber} aria-hidden="true">AI</span>
               <span>
                 <strong>ChatGPTの説明を、もっと分かりやすくする</strong>
-                <small>9〜11個のかんたんな質問に答えると、スマホやパソコンについて聞いたときに、あなたが分かりやすい言葉と手順で説明してもらうための設定を作れます。</small>
+                <small>やさしい質問に8〜10問答えるだけ。スマホやパソコンについて聞いたときに、あなたに分かりやすい言葉と手順で説明してもらう設定を作れます。コピーと貼り付けのやり方も説明します。</small>
                 <span className={styles.cardCta}>かんたんチェックを始める</span>
               </span>
               <span aria-hidden="true">→</span>
@@ -77,7 +77,7 @@ export function WelcomeExperience() {
               <span className={styles.actionNumber} aria-hidden="true">AI</span>
               <span>
                 <strong>ChatGPTの説明を、もっと分かりやすくする</strong>
-                <small>9〜11個のかんたんな質問に答えると、スマホやパソコンについて聞いたときに、あなたが分かりやすい言葉と手順で説明してもらうための設定を作れます。</small>
+                <small>やさしい質問に8〜10問答えるだけ。スマホやパソコンについて聞いたときに、あなたに分かりやすい言葉と手順で説明してもらう設定を作れます。コピーと貼り付けのやり方も説明します。</small>
                 <span className={styles.cardCta}>かんたんチェックを始める</span>
               </span>
               <span aria-hidden="true">→</span>
