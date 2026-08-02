@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import {
   buildPromptResult,
   digitalDimensionLabels,
   getNextQuestion,
-  getQuestion,
   type AnswerOption,
   type DigitalAnswer,
   type DigitalQuestion,
@@ -15,19 +14,6 @@ import styles from "./DigitalCheckExperience.module.css";
 
 type Phase = "intro" | "quiz" | "result";
 type GuideDevice = "pc" | "mobile";
-
-const STORAGE_KEY = "digital-jiritsu:digital-check:v1";
-
-function isStoredAnswer(value: unknown): value is DigitalAnswer {
-  if (!value || typeof value !== "object") return false;
-  const answer = value as Partial<DigitalAnswer>;
-  const question = typeof answer.questionId === "string" ? getQuestion(answer.questionId) : undefined;
-  return Boolean(
-    question
-    && typeof answer.optionId === "string"
-    && question.options.some((option) => option.id === answer.optionId && option.score === answer.score),
-  );
-}
 
 function GuideScreenshot({ src, alt, mobile = false }: { src: string; alt: string; mobile?: boolean }) {
   return (
@@ -45,36 +31,9 @@ function GuideScreenshot({ src, alt, mobile = false }: { src: string; alt: strin
 export function DigitalCheckExperience() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [answers, setAnswers] = useState<DigitalAnswer[]>([]);
-  const [ready, setReady] = useState(false);
   const [copied, setCopied] = useState(false);
   const [guideDevice, setGuideDevice] = useState<GuideDevice>("pc");
   const [announcement, setAnnouncement] = useState("");
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        const parsed = raw ? JSON.parse(raw) : null;
-        if (Array.isArray(parsed) && parsed.every(isStoredAnswer)) {
-          setAnswers(parsed);
-          if (parsed.length && !getNextQuestion(parsed)) setPhase("result");
-        }
-      } catch {
-        // A fresh check still works when storage is unavailable or damaged.
-      }
-      setReady(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
-    } catch {
-      // Keep the current session usable without persistent storage.
-    }
-  }, [answers, ready]);
 
   const currentQuestion = useMemo(() => phase === "quiz" ? getNextQuestion(answers) : null, [answers, phase]);
   const result = useMemo(() => buildPromptResult(answers), [answers]);
@@ -130,10 +89,6 @@ export function DigitalCheckExperience() {
         ? "カスタム指示へ追加する項目をコピーしました。"
         : "自動コピーができなかったため、文章を選択しました。端末のコピー操作を使ってください。");
     }
-  }
-
-  if (!ready) {
-    return <div className={styles.loading}>チェックを準備しています…</div>;
   }
 
   return (

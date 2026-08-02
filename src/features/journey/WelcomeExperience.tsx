@@ -55,8 +55,12 @@ export function WelcomeExperience() {
               <span aria-hidden="true">→</span>
             </Link>
             <Link className={`${styles.freeCard} ${styles.digitalCard}`} href="/digital-check">
-              <span className={styles.actionNumber}>合</span>
-              <span><strong>ChatGPTの説明を自分向けにする</strong><small>短い質問に答えて、スマホ・PCの説明を自分に合う分かりやすさにします</small></span>
+              <span className={styles.actionNumber} aria-hidden="true">AI</span>
+              <span>
+                <strong>ChatGPTの説明を、もっと分かりやすくする</strong>
+                <small>9〜11個のかんたんな質問に答えると、スマホやパソコンについて聞いたときに、あなたが分かりやすい言葉と手順で説明してもらうための設定を作れます。</small>
+                <span className={styles.cardCta}>かんたんチェックを始める</span>
+              </span>
               <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -70,8 +74,12 @@ export function WelcomeExperience() {
               <span aria-hidden="true">→</span>
             </Link>
             <Link className={`${styles.freeCard} ${styles.digitalCard}`} href="/digital-check">
-              <span className={styles.actionNumber}>合</span>
-              <span><strong>ChatGPTの説明を自分向けにする</strong><small>9〜11問の短いチェックで、デジタル操作の説明を自分に合う分かりやすさにします</small></span>
+              <span className={styles.actionNumber} aria-hidden="true">AI</span>
+              <span>
+                <strong>ChatGPTの説明を、もっと分かりやすくする</strong>
+                <small>9〜11個のかんたんな質問に答えると、スマホやパソコンについて聞いたときに、あなたが分かりやすい言葉と手順で説明してもらうための設定を作れます。</small>
+                <span className={styles.cardCta}>かんたんチェックを始める</span>
+              </span>
               <span aria-hidden="true">→</span>
             </Link>
           </div>

@@ -25,9 +25,11 @@
 .changeDevice:hover { background: var(--surface-soft); color: var(--night); }
 .freeCard { display: grid; grid-template-columns: 2.5rem 1fr auto; align-items: center; gap: .8rem; margin-top: 1rem; padding: 1.1rem 1.2rem; border: 3px solid var(--teal); border-radius: 1rem; background: white; color: var(--night); text-align: left; text-decoration: none; }
 .freeCard:hover { background: var(--teal-pale); color: var(--night); }
-.digitalCard { border-color: #d38b00; background: #fff9e7; }
+.digitalCard { padding-block: 1.25rem; border-color: #d38b00; background: #fff9e7; }
 .digitalCard:hover { background: #fff2c8; }
 .digitalCard .actionNumber { background: #b86f00; }
+.digitalCard small { font-size: clamp(.95rem, 1.5vw, 1.05rem); line-height: 1.65; }
+.cardCta { display: inline-block; margin-top: .7rem; color: #805000; font-size: 1rem; font-weight: 800; text-decoration: underline; text-underline-offset: .2rem; }
 .freeCard strong { display: block; font-size: clamp(1rem, 2vw, 1.15rem); }
 .freeCard small { display: block; margin-top: .35rem; color: var(--ink-soft); line-height: 1.5; }
 .firstArea { text-align: center; }
