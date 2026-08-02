@@ -69,14 +69,17 @@ const deviceQuestion: DigitalQuestion = {
   ],
 };
 
-/** 「どの言葉を知っているか」を最初に確かめる。ここが説明のむずかしさの土台になる。 */
+/**
+ * 「どの言葉の意味が分かるか」を最初に確かめる。ここが説明のむずかしさの土台になる。
+ * 「見たことがある」と「意味が分かる」は別のことなので、意味が分かるかどうかだけを聞く。
+ */
 const wordsQuestion: DigitalQuestion = {
   id: "words-known",
   dimension: "words",
   kind: "multi",
   level: 0,
-  title: "見たことがある・意味が分かる言葉を、ぜんぶ選んでください",
-  help: "1つも選ばなくて大丈夫です。分からない言葉が多いほど、ていねいな説明になります。",
+  title: "何のことか分かる言葉を、ぜんぶ選んでください",
+  help: "「聞いたことはあるけれど、意味は分からない」言葉は、選ばずに進んでください。1つも選ばなくて大丈夫です。",
   options: [
     { id: "app", label: "アプリ", note: "スマホやパソコンに入っている、目的ごとの道具", score: 1 },
     { id: "browser", label: "ブラウザ", note: "インターネットを見るアプリ。Chrome、Safari、Edge など", score: 1 },
@@ -85,7 +88,7 @@ const wordsQuestion: DigitalQuestion = {
     { id: "cloud", label: "クラウド", note: "写真やファイルを、インターネット上に預けるしくみ", score: 1 },
     { id: "os", label: "OS", note: "機器を動かす基本のソフト。Windows、iOS、Android など", score: 1 },
     { id: "mfa", label: "二段階認証", note: "パスワードのあと、届いた数字を入れてもう一度確かめるしくみ", score: 1 },
-    { id: "none", label: "どれも初めて見た", score: 0, exclusive: true },
+    { id: "none", label: "どれも分からない", score: 0, exclusive: true },
   ],
 };
 
@@ -521,7 +524,7 @@ function dimensionScore(answers: readonly DigitalAnswer[], dimension: DigitalDim
 }
 
 const strengthLabels: Readonly<Record<DigitalDimension, string>> = {
-  words: "デジタルの言葉をいくつか知っている",
+  words: "デジタルの言葉の意味がいくつか分かる",
   steps: "説明を見ながら自分で進められる",
   typing: "文字入力やコピーができる",
   navigation: "画面を行き来して元に戻れる",

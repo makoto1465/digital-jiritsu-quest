@@ -117,6 +117,7 @@ export function DigitalCheckExperience() {
   const [copied, setCopied] = useState(false);
   const [guideDevice, setGuideDevice] = useState<GuideDevice | null>(null);
   const [pasteDevice, setPasteDevice] = useState<PasteDevice | null>(null);
+  const [guidePeek, setGuidePeek] = useState(false);
   const [announcement, setAnnouncement] = useState("");
 
   const currentQuestion = useMemo(() => phase === "quiz" ? getNextQuestion(answers) : null, [answers, phase]);
@@ -124,6 +125,8 @@ export function DigitalCheckExperience() {
   const totalQuestions = useMemo(() => estimateTotalQuestions(answers), [answers]);
   const activeGuideDevice = guideDevice ?? getGuideDevice(answers);
   const activePasteDevice = pasteDevice ?? getPasteDevice(answers);
+  /** 質問に答えている間は、下の説明を出さない（画面には質問だけを残す） */
+  const showGuides = phase === "result" || (phase === "intro" && guidePeek);
 
   function beginCheck() {
     setAnswers([]);
@@ -131,6 +134,7 @@ export function DigitalCheckExperience() {
     setCopied(false);
     setGuideDevice(null);
     setPasteDevice(null);
+    setGuidePeek(false);
     setAnnouncement("1問目を表示しました。");
     setPhase("quiz");
   }
@@ -216,7 +220,14 @@ export function DigitalCheckExperience() {
             <p>「知らない」と答えるほど、ていねいな説明を作ります。点数や順位はつきません。</p>
           </div>
           <button className={styles.primaryButton} type="button" onClick={beginCheck}>チェックを始める <span aria-hidden="true">→</span></button>
-          <a className={styles.textLink} href="#paste-guide">貼り付け方・登録方法だけ先に見る</a>
+          <button
+            className={styles.textLink}
+            type="button"
+            onClick={() => {
+              setGuidePeek(true);
+              window.requestAnimationFrame(() => document.getElementById("paste-guide")?.scrollIntoView({ block: "start" }));
+            }}
+          >貼り付け方・登録方法だけ先に見る</button>
         </section>
       ) : null}
 
@@ -314,10 +325,13 @@ export function DigitalCheckExperience() {
         </section>
       ) : null}
 
-      <div id="paste-guide">
-        <PasteHowTo device={activePasteDevice} onChangeDevice={setPasteDevice} />
-      </div>
+      {showGuides ? (
+        <div id="paste-guide">
+          <PasteHowTo device={activePasteDevice} onChangeDevice={setPasteDevice} />
+        </div>
+      ) : null}
 
+      {showGuides ? (
       <section className={styles.guide} id="registration-guide" aria-labelledby="guide-title">
         <p className={styles.eyebrow}>貼り付ける場所を開く</p>
         <h2 id="guide-title">③ ChatGPTのカスタム指示へ登録する</h2>
@@ -378,6 +392,7 @@ export function DigitalCheckExperience() {
           </div>
         </div>
       </section>
+      ) : null}
     </div>
   );
 }
