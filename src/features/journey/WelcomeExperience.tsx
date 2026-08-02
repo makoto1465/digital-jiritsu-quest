@@ -54,6 +54,11 @@ export function WelcomeExperience() {
               <span><strong>自由に触ってみる（フリープレイ）</strong><small>課題なし。Windows・Mac・iPhone・Android の本物そっくりな画面を、好きなだけ試せます</small></span>
               <span aria-hidden="true">→</span>
             </Link>
+            <Link className={`${styles.freeCard} ${styles.digitalCard}`} href="/digital-check">
+              <span className={styles.actionNumber}>合</span>
+              <span><strong>ChatGPTの説明を自分向けにする</strong><small>短い質問に答えて、スマホ・PCの説明を自分に合う分かりやすさにします</small></span>
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         ) : (
           <div className={styles.firstArea}>
@@ -62,6 +67,11 @@ export function WelcomeExperience() {
             <Link className={styles.freeCard} href="/free-play">
               <span className={styles.actionNumber}>自</span>
               <span><strong>まず自由に触ってみる（フリープレイ）</strong><small>課題なし。Windows・Mac・iPhone・Android の本物そっくりな画面を、好きなだけ試せます</small></span>
+              <span aria-hidden="true">→</span>
+            </Link>
+            <Link className={`${styles.freeCard} ${styles.digitalCard}`} href="/digital-check">
+              <span className={styles.actionNumber}>合</span>
+              <span><strong>ChatGPTの説明を自分向けにする</strong><small>9〜11問の短いチェックで、デジタル操作の説明を自分に合う分かりやすさにします</small></span>
               <span aria-hidden="true">→</span>
             </Link>
           </div>

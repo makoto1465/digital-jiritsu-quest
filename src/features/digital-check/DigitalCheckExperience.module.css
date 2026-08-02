@@ -1,0 +1,106 @@
+.page {
+  min-height: calc(100svh - 79px);
+  padding: clamp(1rem, 3vw, 2.5rem);
+  background:
+    radial-gradient(circle at 8% 5%, rgba(23, 149, 130, .12), transparent 28rem),
+    linear-gradient(180deg, #f7fbfa 0%, #eef5f3 44%, #f8fafc 100%);
+}
+
+.loading { min-height: 60svh; display: grid; place-items: center; color: var(--ink-soft); }
+.intro, .quiz, .result, .guide { width: min(100%, 64rem); margin-inline: auto; }
+.intro { padding: clamp(1.5rem, 5vw, 4rem); border: 1px solid var(--line); border-radius: 1.5rem; background: #fff; box-shadow: var(--shadow); text-align: center; }
+.eyebrow { margin: 0 0 .55rem; color: var(--teal); font-size: .83rem; font-weight: 900; letter-spacing: .04em; }
+.intro h1, .result > h1 { max-width: 50rem; margin: 0 auto; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.18; }
+.lead, .resultSummary, .guideLead { max-width: 48rem; margin: .9rem auto 0; color: var(--ink-soft); font-size: clamp(1rem, 2vw, 1.12rem); line-height: 1.8; }
+.promiseGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin: 2rem 0 1rem; text-align: left; }
+.promiseGrid div { min-height: 7.5rem; display: flex; flex-direction: column; justify-content: center; padding: 1rem 1.1rem; border: 1px solid #b7d7d0; border-radius: 1rem; background: var(--teal-pale); }
+.promiseGrid strong { color: var(--night); font-size: 1.35rem; }
+.promiseGrid span { margin-top: .35rem; color: var(--ink-soft); font-size: .82rem; line-height: 1.5; }
+.introNote { margin: 1rem 0 1.4rem; padding: 1rem 1.2rem; border-radius: .9rem; background: #fff7de; text-align: left; }
+.introNote strong, .introNote p { margin: 0; }
+.introNote p { margin-top: .25rem; color: var(--ink-soft); line-height: 1.6; }
+.primaryButton, .copyButton, .openChatGpt { min-height: 3.8rem; display: inline-flex; align-items: center; justify-content: center; gap: .7rem; padding: .8rem 1.45rem; border: 0; border-radius: .85rem; background: var(--teal); color: #fff; font: inherit; font-weight: 900; text-decoration: none; cursor: pointer; }
+.primaryButton:hover, .copyButton:hover, .openChatGpt:hover { background: #087466; color: #fff; }
+.textLink { display: block; width: max-content; margin: 1rem auto 0; color: var(--teal); font-weight: 800; }
+
+.quiz { max-width: 54rem; padding-block: clamp(.5rem, 3vw, 2rem); }
+.quizTop { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+.counter { margin: 0; color: var(--night); font-size: 1.15rem; font-weight: 900; }
+.counter span { color: var(--ink-soft); font-size: .82rem; font-weight: 600; }
+.backButton, .restartButton { min-height: 2.8rem; padding: .5rem .9rem; border: 1px solid var(--line-strong); border-radius: .7rem; background: #fff; color: var(--night); font: inherit; font-weight: 800; cursor: pointer; }
+.backButton:hover, .restartButton:hover { border-color: var(--teal); background: var(--teal-pale); }
+.progressTrack { height: .65rem; margin: .8rem 0 1.1rem; overflow: hidden; border-radius: 999px; background: #dce8e5; }
+.progressTrack span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--teal), #29a887); transition: width .22s ease; }
+.questionCard { padding: clamp(1.3rem, 4vw, 2.4rem); border: 1px solid var(--line); border-radius: 1.35rem; background: #fff; box-shadow: var(--shadow-small); }
+.dimensionLabel { display: inline-flex; padding: .3rem .65rem; border-radius: 999px; background: var(--teal-pale); color: var(--teal); font-size: .78rem; font-weight: 900; }
+.questionCard h1 { margin: .75rem 0 .4rem; font-size: clamp(1.5rem, 4vw, 2.3rem); line-height: 1.35; }
+.questionCard > p { margin: 0; color: var(--ink-soft); line-height: 1.65; }
+.answerGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem; margin-top: 1.35rem; }
+.answerGrid button { min-height: 5.7rem; display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .9rem 1rem; border: 2px solid var(--line); border-radius: .85rem; background: #fff; color: var(--night); text-align: left; cursor: pointer; }
+.answerGrid button:hover, .answerGrid button:focus-visible { border-color: var(--teal); background: var(--teal-pale); }
+.answerGrid strong, .answerGrid small { display: block; }
+.answerGrid strong { line-height: 1.45; }
+.answerGrid small { margin-top: .25rem; color: var(--ink-soft); }
+.reassurance { margin: .8rem 0 0; color: var(--ink-soft); font-size: .83rem; text-align: center; }
+
+.result { padding: clamp(1rem, 4vw, 2.2rem) 0; text-align: center; }
+.resultColumns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1.5rem 0; text-align: left; }
+.resultColumns section { padding: 1.2rem; border: 1px solid var(--line); border-radius: 1rem; background: #fff; }
+.resultColumns h2 { margin: 0 0 .7rem; font-size: 1.05rem; }
+.resultColumns ul { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; color: var(--ink-soft); }
+.promptCard { padding: clamp(1.2rem, 4vw, 2rem); border: 3px solid var(--teal); border-radius: 1.25rem; background: #fff; box-shadow: var(--shadow-small); text-align: left; }
+.promptHeading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.promptHeading p, .promptHeading h2 { margin: 0; }
+.promptHeading p { color: var(--teal); font-size: .78rem; font-weight: 900; }
+.promptHeading h2 { margin-top: .2rem; font-size: 1.35rem; }
+.promptHeading > span { flex: 0 0 auto; padding: .35rem .65rem; border-radius: 999px; background: var(--surface-soft); color: var(--ink-soft); font-size: .78rem; font-weight: 800; }
+.promptHelp { margin: .8rem 0; color: var(--ink-soft); line-height: 1.6; }
+.promptCard textarea { width: 100%; min-height: 17rem; padding: 1rem; border: 1px solid var(--line-strong); border-radius: .8rem; background: #f8fafc; color: var(--night); font: .92rem/1.75 ui-monospace, "Yu Gothic UI", sans-serif; resize: vertical; }
+.copyButton { width: 100%; margin-top: .75rem; }
+.privacyNote { margin: .6rem 0 0; color: var(--ink-soft); font-size: .78rem; text-align: center; }
+.restartButton { margin-top: 1rem; }
+
+.guide { margin-top: clamp(2rem, 6vw, 5rem); padding: clamp(1.2rem, 4vw, 2.6rem); border: 1px solid var(--line); border-radius: 1.5rem; background: #fff; box-shadow: var(--shadow-small); text-align: center; }
+.guide h2 { margin: 0; font-size: clamp(1.7rem, 4vw, 2.7rem); }
+.guideTabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: .55rem; width: min(100%, 36rem); margin: 1.5rem auto; padding: .35rem; border-radius: .9rem; background: var(--surface-soft); }
+.guideTabs button { min-height: 3.2rem; padding: .65rem; border: 0; border-radius: .7rem; background: transparent; color: var(--ink-soft); font: inherit; font-weight: 800; cursor: pointer; }
+.guideTabs button[aria-selected="true"] { background: var(--night); color: #fff; box-shadow: 0 5px 14px rgba(13, 23, 51, .18); }
+.guidePanel { text-align: left; }
+.guideSteps { display: grid; gap: 1.2rem; margin: 0; padding: 0; list-style: none; counter-reset: guide-step; }
+.guideSteps > li { padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--line); border-radius: 1rem; background: #fbfdfc; }
+.guideSteps > li > div:first-child { display: flex; align-items: center; gap: .7rem; }
+.guideSteps > li > div:first-child > span { width: 2.1rem; height: 2.1rem; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--teal); color: #fff; font-weight: 900; }
+.guideSteps h3, .guideSteps p { margin: 0; }
+.guideSteps h3 { font-size: 1.12rem; }
+.guideSteps > li > p { margin: .55rem 0 .9rem 2.8rem; color: var(--ink-soft); line-height: 1.65; }
+
+.guideScreenshot { display: block; width: 100%; height: auto; border: 1px solid #c8ced5; border-radius: .8rem; background: #fff; box-shadow: 0 10px 28px rgba(18, 29, 48, .12); }
+.guideScreenshotMobile { width: min(100%, 21rem); margin-inline: auto; border-radius: 2.25rem; }
+
+.finishBox { margin-top: 1.2rem; padding: 1.2rem; border-radius: 1rem; background: var(--night); color: #fff; text-align: left; }
+.finishBox > strong { font-size: 1.15rem; }
+.finishBox > p { color: #d6deef; line-height: 1.7; }
+.finishBox > div { display: flex; flex-wrap: wrap; gap: .7rem; }
+.helpLink { min-height: 3.8rem; display: inline-flex; align-items: center; justify-content: center; padding: .8rem 1.1rem; border: 1px solid #92a3c9; border-radius: .85rem; color: #fff; font-weight: 800; text-decoration: none; }
+.helpLink:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+@media (max-width: 720px) {
+  .page { min-height: calc(100svh - 68px); padding: .7rem; }
+  .intro { padding: 1.2rem; border-radius: 1rem; }
+  .promiseGrid, .answerGrid, .resultColumns { grid-template-columns: 1fr; }
+  .promiseGrid div { min-height: 5.8rem; }
+  .quizTop { align-items: start; }
+  .questionCard { padding: 1rem; }
+  .answerGrid button { min-height: 4.8rem; }
+  .promptHeading { align-items: start; }
+  .promptCard textarea { min-height: 23rem; font-size: .82rem; }
+  .guide { padding: 1rem; border-radius: 1rem; }
+  .guideLead { font-size: .92rem; }
+  .guideSteps > li { padding: .8rem; }
+  .guideSteps > li > p { margin-left: 0; }
+  .finishBox > div, .openChatGpt, .helpLink { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressTrack span { transition: none; }
+}
